@@ -104,7 +104,7 @@ pnpm install
 
 以下のコマンドで開発サーバーを起動します。
 
-```
+```bash
 pnpm dev
 ```
 
