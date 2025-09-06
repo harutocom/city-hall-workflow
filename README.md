@@ -79,6 +79,16 @@ city-hall-workflow/
 - [Node.js](https://nodejs.org/) (v18.17.0 or later)
 - [pnpm](https://pnpm.io/installation)
 
+Node.js のインストール方法に関しては以下の記事を参考にしてください。
+
+- Node.js：https://zenn.dev/kuuki/articles/windows-nodejs-install
+
+node が無事インストールできたらこのコマンドで pnpm をインストールできます。
+
+```bash
+npm install -g pnpm
+```
+
 ### 2. リポジトリをクローン
 
 プロジェクトファイルを置きたい階層に移動して以下のコマンドを実行します。
