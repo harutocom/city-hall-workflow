@@ -1,0 +1,136 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../lib/generated/prisma"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model application_attachments {
+  id             Int          @id @default(autoincrement())
+  application_id Int
+  uploaded_by_id Int
+  file_name      String       @db.VarChar(255)
+  file_path      String       @db.VarChar(500)
+  uploaded_at    DateTime     @default(now()) @db.Timestamp(6)
+  applications   applications @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users          users        @relation(fields: [uploaded_by_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model application_templates {
+  id                Int                 @id @default(autoincrement())
+  name              String              @db.VarChar(255)
+  description       String?
+  created_by        Int?
+  created_at        DateTime            @default(now()) @db.Timestamp(6)
+  updated_at        DateTime            @default(now()) @db.Timestamp(6)
+  users             users?              @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  applications      applications[]
+  template_elements template_elements[]
+}
+
+model application_values {
+  id                Int               @id @default(autoincrement())
+  application_id    Int
+  field_id          Int
+  value             String?
+  created_at        DateTime          @default(now()) @db.Timestamp(6)
+  updated_at        DateTime          @default(now()) @db.Timestamp(6)
+  applications      applications      @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  template_elements template_elements @relation(fields: [field_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model applications {
+  id                      Int                       @id @default(autoincrement())
+  applicant_id            Int
+  template_id             Int
+  status                  String                    @db.VarChar(50)
+  submitted_at            DateTime?                 @db.Timestamp(6)
+  completed_at            DateTime?                 @db.Timestamp(6)
+  created_at              DateTime                  @default(now()) @db.Timestamp(6)
+  updated_at              DateTime                  @default(now()) @db.Timestamp(6)
+  application_attachments application_attachments[]
+  application_values      application_values[]
+  users                   users                     @relation(fields: [applicant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  application_templates   application_templates     @relation(fields: [template_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  approval_flows          approval_flows[]
+}
+
+model approval_flows {
+  id             Int          @id @default(autoincrement())
+  application_id Int
+  approver_id    Int
+  action         String       @db.VarChar(50)
+  comment        String?
+  acted_at       DateTime     @default(now()) @db.Timestamp(6)
+  applications   applications @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users          users        @relation(fields: [approver_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model departments {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique @db.VarChar(255)
+  users users[]
+}
+
+model permissions {
+  id               Int                @id @default(autoincrement())
+  name             String             @unique @db.VarChar(255)
+  description      String?
+  user_permissions user_permissions[]
+}
+
+model playing_with_neon {
+  id    Int    @id @default(autoincrement())
+  name  String
+  value Float? @db.Real
+}
+
+model roles {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique @db.VarChar(255)
+  users users[]
+}
+
+model template_elements {
+  id                    Int                   @id @default(autoincrement())
+  template_id           Int
+  component_name        String                @db.VarChar(255)
+  sort_order            Int
+  props                 Json                  @default("{}")
+  data_type             String?
+  application_values    application_values[]
+  application_templates application_templates @relation(fields: [template_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
+
+model user_permissions {
+  user_id       Int
+  permission_id Int
+  granted_at    DateTime    @default(now()) @db.Timestamp(6)
+  permissions   permissions @relation(fields: [permission_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  users         users       @relation(fields: [user_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+
+  @@id([user_id, permission_id])
+}
+
+model users {
+  id                      Int                       @id @default(autoincrement())
+  name                    String                    @db.VarChar(255)
+  email                   String                    @unique @db.VarChar(255)
+  password_hash           String                    @db.VarChar(255)
+  department_id           Int?
+  role_id                 Int?
+  remaining_leave_hours   Decimal                   @default(0) @db.Decimal
+  created_at              DateTime                  @default(now()) @db.Timestamp(6)
+  updated_at              DateTime                  @default(now()) @db.Timestamp(6)
+  application_attachments application_attachments[]
+  application_templates   application_templates[]
+  applications            applications[]
+  approval_flows          approval_flows[]
+  user_permissions        user_permissions[]
+  departments             departments?              @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  roles                   roles?                    @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+}
