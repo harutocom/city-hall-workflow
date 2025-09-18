@@ -1,3 +1,3 @@
 export default function Settings() {
-  return <>Settings Page</>;
+  return <>Settings Page</>; //text hogehoge
 }
