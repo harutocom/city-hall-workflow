@@ -57,8 +57,10 @@ export default function Home() {
             </div>
             <div className="flex relative w-full h-16 bg-[#FEF2F2] rounded-[12px] border-3 border-[#F4C2C2]">
               <img src="/NO.png" alt="NO" className="absolute top-3.5 left-4" />
-              <p className="absolute top-4.5 left-20">休暇願が承認されました</p>
-              <p className="absolute top-4.5 left-80">2025/09/19</p>
+              <p className="absolute top-4.5 left-20">
+                休暇願が差し戻しされました
+              </p>
+              <p className="absolute top-4.5 left-80">2025/09/18</p>
             </div>
           </div>
         </div>
