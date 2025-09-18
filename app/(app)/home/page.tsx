@@ -7,7 +7,7 @@ export default function Home() {
         <button className="h-28 bg-[#1F6C7E] text-white text-4xl font-bold rounded-[16px] shadow-md shadow-black/60 hover:bg-[#21838e] cursor-pointer">
           <p>申請する</p>
         </button>
-        <div className="flex justify-center gap-20">
+        <div className="w-full flex justify-center gap-16">
           <button className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#21838e] cursor-pointer">
             <img
               src="/Search.png"
