@@ -4,11 +4,11 @@ export default function Home() {
   return (
     <div className="min-h-screen w-full bg-[#F4F6F8]">
       <div className="flex flex-col px-38 pt-48 pb-16 gap-12">
-        <button className="h-28 bg-[#1F6C7E] text-white text-4xl font-bold rounded-[16px] shadow-md shadow-black/60">
+        <button className="h-28 bg-[#1F6C7E] text-white text-4xl font-bold rounded-[16px] shadow-md shadow-black/60 hover:bg-[#21838e] cursor-pointer">
           <p>申請する</p>
         </button>
         <div className="flex justify-center gap-20">
-          <button className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative">
+          <button className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#21838e] cursor-pointer">
             <img
               src="/Search.png"
               alt="Search"
@@ -20,7 +20,7 @@ export default function Home() {
               <span className="text-3xl ml-1 leading-none">件</span>
             </p>
           </button>
-          <button className="w-140 h-48 bg-[#CB223F] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative">
+          <button className="w-140 h-48 bg-[#CB223F] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#e04861] cursor-pointer">
             <img
               src="/Read.png"
               alt="Read"
@@ -32,7 +32,7 @@ export default function Home() {
               <span className="text-3xl ml-1 leading-none">件</span>
             </p>
           </button>
-          <button className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative">
+          <button className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#21838e] cursor-pointer">
             <img
               src="/TimeLimit.png"
               alt="a
