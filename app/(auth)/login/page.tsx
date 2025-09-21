@@ -4,7 +4,7 @@ import Button from '@/componets/ui/Button';
 export default function Login() {
   return (
   <>
-  <div className='flex flex-col justify-center items-center gap-[48px] mt-[144px]'>
+  <div className='flex flex-col justify-center items-center gap-[48px] pt-[144px]  bg-[#F4F6F8]'>
     <Image src="/image 3.png" alt="Logo" width={600} height={232}></Image>
     <h1 className='text-[48px] text-weight font-bold'>休暇申請サイト</h1>
     <form action="" className='flex flex-col justify-center items-center gap-[48px]'>
