@@ -1,5 +1,5 @@
 // app/api/auth/[...nextauth]/route.ts
-// 認証のAPI
+// NextAuthの認証APIをカスタマイズ
 
 import NextAuth from "next-auth/next";
 import { AuthOptions } from "@/types/nextauth"; // カスタム型定義
