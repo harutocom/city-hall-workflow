@@ -32,8 +32,8 @@ export default function Login() {
       // route.ts で throw したメッセージが入る
       setError(result.error);
     } else {
-      // ログイン成功時はhomeへ遷移(今は仮で"/"へ)
-      router.push("/");
+      // ログイン成功時はhomeへ遷移
+      router.push("/home");
     }
   };
   return (
