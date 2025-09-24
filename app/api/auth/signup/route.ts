@@ -1,4 +1,4 @@
-// app/api/register/route.ts
+// app/api/auth/signup/route.ts
 
 import { NextResponse } from "next/server";
 import bcrypt from "bcrypt";
