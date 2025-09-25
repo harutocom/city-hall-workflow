@@ -1,10 +1,13 @@
+// app/(auth)/signup/page.tsx
+// サインアップページのコンポーネント
+
 "use client";
 import Image from "next/image";
 import { useState } from "react";
 
 const departments = [
   { id: 1, name: "DX推進課" },
-  { id: 2, name: "市民課" },
+  { id: 2, name: "総務課" },
 ];
 
 const roles = [
@@ -14,6 +17,7 @@ const roles = [
 ];
 
 export default function Signup() {
+  // stateの管理
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -22,18 +26,29 @@ export default function Signup() {
   const [password, setPassword] = useState("");
   const [auth, setAuth] = useState("");
 
+  // サインアップ処理
   const handleSignup = async (event: React.FormEvent<HTMLFormElement>) => {
+    // フォームのデフォルト動作を防止
     event.preventDefault();
     setError(null); // エラーメッセージリセット
     try {
+      // APIエンドポイントにPOSTリクエストを送信
       const response = await fetch("/api/auth/signup", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ name, email, departmentId, roleId, password }),
+        body: JSON.stringify({
+          name,
+          email,
+          departmentId,
+          roleId,
+          password,
+          permissionId: auth,
+        }),
       });
 
+      // レスポンスがOKでない場合、エラーメッセージを設定
       if (!response.ok) {
         const errorData = await response.json();
         setError(errorData.message || "Signup failed");
