@@ -5,9 +5,7 @@ import { withAuth } from "next-auth/middleware";
 
 export default withAuth({
   callbacks: {
-    // 認可（authorization）のロジックをここに記述
     authorized: ({ token }) => {
-      // !!token で、tokenがnullやundefinedでないこと（＝認証済みであること）を判定
       return !!token;
     },
   },
