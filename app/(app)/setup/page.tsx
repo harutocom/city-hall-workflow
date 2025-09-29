@@ -52,8 +52,8 @@ export default function Setup() {
           <img src="/Trash.png" alt="Trash" className="w-4 h-4" />
         </button>
         <button className="flex items-center gap-2 justify-between text-000000 font-bold bg-white shadow-md border border-[#1F6C7E] p-6 hover:bg-[#DDDDDD]">
-          <span>テンプレートを作成</span>
-          <img src="/Plus.png" alt="Plus" className="w-4 h-4" />
+          <span>テンプレート一覧</span>
+          <img src="/Next.png" alt="Next" className="w-4 h-4" />
         </button>
       </div>
     </div>
