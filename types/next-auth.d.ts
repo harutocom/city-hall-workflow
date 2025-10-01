@@ -5,7 +5,7 @@ declare module "next-auth" {
   // session.user の型を拡張
   interface Session {
     user?: {
-      id: String; // NextAuthではuser.idはstring型で扱われる
+      id: string; // NextAuthではuser.idはstring型で扱われる
       permission_ids: number[];
       department_id?: number;
       role_id?: number;
@@ -14,7 +14,7 @@ declare module "next-auth" {
 
   // User オブジェクトを拡張
   interface User {
-    id: String;
+    id: string;
     permission_ids: number[];
     department_id?: number;
     role_id?: number;
@@ -24,7 +24,7 @@ declare module "next-auth" {
 // JWT の型拡張
 declare module "next-auth/jwt" {
   interface JWT {
-    id: String;
+    id: string;
     permission_ids: number[];
     department_id?: number;
     role_id?: number;
