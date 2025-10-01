@@ -2,6 +2,7 @@
 // NextAuthの認証APIをカスタマイズ
 
 import NextAuth from "next-auth/next";
+import type { User as NextAuthUser } from "next-auth";
 // import { AuthOptions } from "@/types/nextauth"; // カスタム型定義
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
@@ -60,13 +61,13 @@ export const authOptions: NextAuthOptions = {
 
         // 認証成功！ JWTに渡すユーザー情報を返す
         return {
-          id: user.id,
+          id: String(user.id),
           email: user.email,
           name: user.name,
           permission_ids: permissions.map((p) => p.permission_id),
           department_id: user.department_id,
           role_id: user.role_id,
-        } as import("next-auth").User; // 必要に応じて型を調整
+        } as NextAuthUser; // 必要に応じて型を調整
       },
     }),
   ],
@@ -79,7 +80,7 @@ export const authOptions: NextAuthOptions = {
     jwt: async ({ token, user }) => {
       if (user) {
         // userオブジェクトは、authorize関数から返されたもの
-        token.id = Number(user.id);
+        token.id = user.id;
         token.permission_ids = user.permission_ids;
         token.department_id = user.department_id;
         token.role_id = user.role_id;
