@@ -1,4 +1,4 @@
-// app/api/login/page.tsx
+// app/(auth)/login/page.tsx
 // ログインページのコンポーネント
 
 "use client";
