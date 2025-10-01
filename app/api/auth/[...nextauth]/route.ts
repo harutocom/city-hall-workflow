@@ -3,7 +3,6 @@
 
 import NextAuth from "next-auth/next";
 import type { User as NextAuthUser } from "next-auth";
-// import { AuthOptions } from "@/types/nextauth"; // カスタム型定義
 import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/lib/db"; // Prisma Client
