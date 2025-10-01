@@ -2,13 +2,14 @@
 // NextAuthの認証APIをカスタマイズ
 
 import NextAuth from "next-auth/next";
-import { AuthOptions } from "@/types/nextauth"; // カスタム型定義
+// import { AuthOptions } from "@/types/nextauth"; // カスタム型定義
+import type { NextAuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { db } from "@/lib/db"; // Prisma Client
 import bcrypt from "bcrypt"; // パスワードのハッシュ化と比較
 
 // NextAuth.jsの設定
-export const authOptions: AuthOptions = {
+export const authOptions: NextAuthOptions = {
   // 認証方法
   providers: [
     // 「メールアドレスとパスワード」による認証方法を設定
@@ -59,13 +60,13 @@ export const authOptions: AuthOptions = {
 
         // 認証成功！ JWTに渡すユーザー情報を返す
         return {
-          id: user.id.toString(),
+          id: user.id,
           email: user.email,
           name: user.name,
           permission_ids: permissions.map((p) => p.permission_id),
           department_id: user.department_id,
           role_id: user.role_id,
-        };
+        } as import("next-auth").User; // 必要に応じて型を調整
       },
     }),
   ],
@@ -78,7 +79,7 @@ export const authOptions: AuthOptions = {
     jwt: async ({ token, user }) => {
       if (user) {
         // userオブジェクトは、authorize関数から返されたもの
-        token.id = user.id;
+        token.id = Number(user.id);
         token.permission_ids = user.permission_ids;
         token.department_id = user.department_id;
         token.role_id = user.role_id;
@@ -103,8 +104,8 @@ export const authOptions: AuthOptions = {
   },
 };
 
-// NextAuth.jsを初期化 as any で型チェックをスキップ
-const handler = NextAuth(authOptions as any);
+// NextAuth.jsを初期化
+const handler = NextAuth(authOptions);
 
 // GETリクエストとPOSTリクエストを、同じhandlerで処理するようにエクスポート
 export { handler as GET, handler as POST };
