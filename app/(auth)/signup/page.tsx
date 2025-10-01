@@ -34,11 +34,11 @@ export default function Signup() {
         </div>
         <input type="password" placeholder='初期パスワード' className='h-[56px] w-[664px] bg-[#D9D9D9] pl-[32px] rounded-[8px]'></input>
         <div className="flex gap-[184px] text-white text-[20px] font-bold">
-          <div className="flex gap-[8px] w-[240px] h-[80px] bg-[#CB223F] justify-center items-center rounded-[16px]">
+          <div className="flex gap-[8px] w-[240px] h-[80px] bg-[#CB223F] justify-center items-center rounded-[16px] hover:bg-[#e04861]">
             <Image src="/back-arrow.svg" alt="arrow" width={24} height={24}></Image>
             <p>戻る</p>
           </div>
-          <div className="flex gap-[8px] w-[240px] h-[80px] bg-[#1F6C7E] justify-center items-center rounded-[16px]">
+          <div className="flex gap-[8px] w-[240px] h-[80px] bg-[#1F6C7E] justify-center items-center rounded-[16px] hover:bg-[#21838e]">
             <Image src="/plus.svg" alt="plus" width={24} height={24}></Image>
             <p>追加</p>
           </div>
