@@ -6,7 +6,7 @@ export default function MainLayout({
 }>) {
   return (
     <>
-      <main className="pt-16">{children}</main>
+      <main className="">{children}</main>
     </>
   );
 }
