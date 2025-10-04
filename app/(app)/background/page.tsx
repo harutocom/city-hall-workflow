@@ -61,7 +61,11 @@ export default function Home() {
                 {/* メッセージ・日付・ボタン */}
                 <div className="flex items-center justify-between relative">
                   <div className="flex items-center gap-4">
-                    <img src={icon} alt="icon" className="w-6 h-6" />
+                    <img 
+                    src={icon} 
+                    alt="icon" 
+                    className="w-6 h-6" 
+                    />
                     <span>{notice.message}</span>
                   </div>
                   <div className="flex items-center gap-6">
