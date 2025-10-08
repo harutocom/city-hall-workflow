@@ -2,6 +2,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { db } from "@/lib/db";
+import { z } from "zod";
+import { TemplateCreateSchema } from "@/schemas/template";
 
 // templatesテーブルから一覧を取得する
 export async function GET() {
@@ -70,13 +72,69 @@ export async function POST(request: NextRequest) {
         status: 403,
       });
     }
-
+    // フロントからデータを取得
     const data = await request.json();
-    const a = data;
+    // フロントのデータが正しいかzodを使い検証し、型を変換する
+    const validatedData = TemplateCreateSchema.parse(data);
+    // validatedDataから各値を分割代入で取り出す
+    const { name, description, elements } = validatedData;
+    // テンプレ作成者のIDもtokenから取得
+    const createdById = token.id;
 
-    return;
+    // DBに矛盾が生じないようにトランザクション処理を開始
+    await db.$transaction(async (tx) => {
+      // 親テーブルのapplication_templatesにデータを作成
+      const newTemplates = await tx.application_templates.create({
+        data: {
+          name: name,
+          description: description,
+          created_by: parseInt(createdById, 10),
+        },
+      });
+
+      // テンプレに必要な複数のフロントからのデータを配列として持っておく
+      const elementsToCreate = elements.map((element) => ({
+        template_id: newTemplates.id, // 👈 親IDを設定
+        component_name: element.component_name,
+        sort_order: element.sort_order,
+        props: element.props,
+        data_type: element.data_type,
+      }));
+
+      // createManyを追加配列のデータを一括で作成(効率が良くなる)
+      await tx.template_elements.createMany({
+        data: elementsToCreate,
+      });
+
+      return newTemplates;
+    });
+
+    // テンプレート追加処理成功時のレスポンス
+    return NextResponse.json(
+      { message: "テンプレートを正常に作成しました。" },
+      { status: 201 }
+    );
   } catch (error) {
-    console.error(error);
-    return;
+    // エラーがzodによるものかそれ以外かを判断
+    if (error instanceof z.ZodError) {
+      // zodエラーの場合どこの入力でエラーかを返す
+      console.warn("Zodバリデーション失敗:", error.issues);
+      return NextResponse.json(
+        {
+          message: "入力データが無効です。",
+          errors: error.issues.map((issue) => ({
+            path: issue.path.join("."),
+            message: issue.message,
+          })),
+        },
+        { status: 400 }
+      );
+    }
+    // zod以外のエラーの場合は普通にerrorを返す
+    console.error("テンプレート作成中のエラー", error);
+    return NextResponse.json(
+      { message: "テンプレート作成中にエラーが発生しました。" },
+      { status: 500 }
+    );
   }
 }
