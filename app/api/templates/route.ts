@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { db } from "@/lib/db";
 import { z } from "zod";
-import { TemplateCreateSchema } from "@/schemas/template";
+import { TemplateSchema } from "@/schemas/template";
 
 // templatesテーブルから一覧を取得する
 export async function GET() {
@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     // フロントからデータを取得
     const data = await request.json();
     // フロントのデータが正しいかzodを使い検証し、型を変換する
-    const validatedData = TemplateCreateSchema.parse(data);
+    const validatedData = TemplateSchema.parse(data);
     // validatedDataから各値を分割代入で取り出す
     const { name, description, elements } = validatedData;
     // テンプレ作成者のIDもtokenから取得
@@ -94,7 +94,7 @@ export async function POST(request: NextRequest) {
 
       // テンプレに必要な複数のフロントからのデータを配列として持っておく
       const elementsToCreate = elements.map((element) => ({
-        template_id: newTemplates.id, // 👈 親IDを設定
+        template_id: newTemplates.id,
         component_name: element.component_name,
         sort_order: element.sort_order,
         props: element.props,
