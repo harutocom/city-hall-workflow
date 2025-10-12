@@ -5,14 +5,94 @@
 import { useState } from "react";
 import TemplateMetadataForm from "@/componets/featurses/templates-bilder/TemplateMetadataForm";
 import FormComponentPalette from "@/componets/featurses/templates-bilder/FormComponentPalette";
+import FormBuilderCanvas from "@/componets/featurses/templates-bilder/FormBuilderCanvas";
+import { FormComponent } from "@/types/template";
+const sampleComponents: FormComponent[] = [
+  {
+    id: "id-text-123",
+    component_name: "text",
+    props: {
+      label: "お名前",
+      isRequired: true,
+      placeholder: "例：鈴木 一郎",
+    },
+  },
+  {
+    id: "id-textarea-456",
+    component_name: "textarea",
+    props: {
+      label: "お問い合わせ内容",
+      isRequired: true,
+      placeholder: "ご自由にご記入ください",
+    },
+  },
+  {
+    id: "id-radio-789",
+    component_name: "radio",
+    props: {
+      label: "ご希望の連絡方法",
+      isRequired: true,
+      options: [
+        { label: "メール", value: "email" },
+        { label: "電話", value: "phone" },
+      ],
+    },
+  },
+  {
+    id: "id-checkbox-abc",
+    component_name: "checkbox",
+    props: {
+      label: "興味のある分野（複数選択可）",
+      isRequired: false,
+      options: [
+        { label: "Web開発", value: "web" },
+        { label: "データサイエンス", value: "data" },
+        { label: "UI/UXデザイン", value: "design" },
+      ],
+    },
+  },
+  {
+    id: "id-select-def",
+    component_name: "select",
+    props: {
+      label: "所属部署",
+      isRequired: true,
+      placeholder: "部署を選択してください",
+      options: [
+        { label: "総務課", value: "soumu" },
+        { label: "企画課", value: "kikaku" },
+        { label: "健康福祉課", value: "kenkou" },
+      ],
+    },
+  },
+  {
+    id: "id-date-ghi",
+    component_name: "date",
+    props: {
+      label: "希望日",
+      isRequired: false,
+    },
+  },
+  {
+    id: "id-daterange-jkl",
+    component_name: "date_range",
+    props: {
+      label: "休暇期間",
+      isRequired: true,
+    },
+  },
+];
 
 export default function templateCreatePage() {
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [components, setComponents] = useState([]);
+  const [selectedComponentId, setSelectedComponentId] = useState("");
 
   const handleSubmit = () => {};
   const onAddComponent = () => {};
+  const onSelectComponent = () => {};
 
   //   const onNameChange = () => {};
   //   const onDescriptionchange = () => {};
@@ -57,6 +137,13 @@ export default function templateCreatePage() {
       <div className="flex">
         <div className="w-[320px]">
           <FormComponentPalette onAddComponent={onAddComponent} />
+        </div>
+        <div className="w-full">
+          <FormBuilderCanvas
+            components={sampleComponents}
+            selectedComponentId={selectedComponentId}
+            onSelectComponent={onSelectComponent}
+          />
         </div>
       </div>
     </>

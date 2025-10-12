@@ -1,3 +1,5 @@
+// types/template.ts
+
 export type FormComponentType =
   | "text"
   | "textarea"
@@ -9,10 +11,8 @@ export type FormComponentType =
 
 export interface FormComponent {
   id: string;
-  type: FormComponentType;
-  label: string;
-  placeholder?: string;
-  required: boolean;
+  component_name: FormComponentType;
+  props: ComponentProps;
 }
 
 /**
@@ -26,9 +26,9 @@ export interface Option {
 /**
  * 選択肢を持つコンポーネントが共通して受け取るPropsの型
  */
-export interface OptionsComponentProps {
+export interface ComponentProps {
   label: string;
   placeholder?: string;
   isRequired: boolean;
-  options: Option[]; // 上で定義したOptionの配列
+  options?: Option[]; // 上で定義したOptionの配列
 }
