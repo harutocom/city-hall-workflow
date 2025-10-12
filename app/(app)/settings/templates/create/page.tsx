@@ -4,6 +4,7 @@
 
 import { useState } from "react";
 import TemplateMetadataForm from "@/componets/featurses/templates-bilder/TemplateMetadataForm";
+import FormComponentPalette from "@/componets/featurses/templates-bilder/FormComponentPalette";
 
 export default function templateCreatePage() {
   const [name, setName] = useState("");
@@ -11,6 +12,8 @@ export default function templateCreatePage() {
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = () => {};
+  const onAddComponent = () => {};
+
   //   const onNameChange = () => {};
   //   const onDescriptionchange = () => {};
   return (
@@ -51,14 +54,11 @@ export default function templateCreatePage() {
           </div>
         </div>
       </div>
+      <div className="flex">
+        <div className="w-[320px]">
+          <FormComponentPalette onAddComponent={onAddComponent} />
+        </div>
+      </div>
     </>
-    // <div className="mt-[20px]">
-    //   <TemplateMetaDataForm
-    //     name={name}
-    //     description={description}
-    //     onNameChange={onNameChange}
-    //     onDescriptionChange={onDescriptionchange}
-    //   />
-    // </div>
   );
 }
