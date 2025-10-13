@@ -5,39 +5,45 @@ interface FormComponentPaletteProps {
   onAddComponent: (type: FormComponentType) => void;
 }
 
-const PALETTE_ITEMS = [
+interface PaletteItem {
+  type: FormComponentType;
+  label: string;
+  description: string;
+}
+
+const PALETTE_ITEMS: PaletteItem[] = [
   {
-    type: "text" as FormComponentType,
+    type: "text",
     label: "テキスト入力",
     description: "一行のテキストを入力",
   },
   {
-    type: "textarea" as FormComponentType,
+    type: "textarea",
     label: "テキストエリア",
     description: "複数行のテキスト入力",
   },
   {
-    type: "select" as FormComponentType,
+    type: "select",
     label: "選択肢",
     description: "プルダウンメニュー",
   },
   {
-    type: "radio" as FormComponentType,
+    type: "radio",
     label: "ラジオボタン",
     description: "単一選択",
   },
   {
-    type: "checkbox" as FormComponentType,
+    type: "checkbox",
     label: "チェックボックス",
     description: "複数選択",
   },
   {
-    type: "date" as FormComponentType,
+    type: "date",
     label: "日付選択",
     description: "日付の選択",
   },
   {
-    type: "date_range" as FormComponentType,
+    type: "date_range",
     label: "日付範囲選択",
     description: "日付範囲の選択",
   },

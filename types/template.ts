@@ -1,34 +1,41 @@
 // types/template.ts
+// types/template.ts
+import { z } from "zod";
 
-export type FormComponentType =
-  | "text"
-  | "textarea"
-  | "select"
-  | "radio"
-  | "checkbox"
-  | "date"
-  | "date_range";
+// Optionのスキーマ
+const OptionSchema = z.object({
+  label: z.string(),
+  value: z.string(),
+});
 
-export interface FormComponent {
-  id: string;
-  component_name: FormComponentType;
-  props: ComponentProps;
-}
+// ComponentPropsのスキーマ
+const ComponentPropsSchema = z.object({
+  label: z.string(),
+  isRequired: z.boolean(),
+  placeholder: z.string().optional(),
+  options: z.array(OptionSchema).optional(),
+});
 
-/**
- * 選択肢一つひとつが持つべきデータの型
- */
-export interface Option {
-  label: string; // ユーザーに見える表示名
-  value: string; // 内部で扱うデータとしての値
-}
+// FormComponent全体のスキーマ
+const FormComponentSchema = z.object({
+  id: z.string(),
+  component_name: z.enum([
+    "text",
+    "textarea",
+    "select",
+    "radio",
+    "checkbox",
+    "date",
+    "date_range",
+  ]),
+  props: ComponentPropsSchema,
+});
 
-/**
- * 選択肢を持つコンポーネントが共通して受け取るPropsの型
- */
-export interface ComponentProps {
-  label: string;
-  placeholder?: string;
-  isRequired: boolean;
-  options?: Option[]; // 上で定義したOptionの配列
-}
+// --- ★★★ ZodスキーマからTypeScriptの型を自動生成 ★★★ ---
+// これにより、他のファイルは今まで通り `FormComponent` などをインポートして使えます
+export type FormComponent = z.infer<typeof FormComponentSchema>;
+export type ComponentProps = z.infer<typeof ComponentPropsSchema>;
+export type Option = z.infer<typeof OptionSchema>;
+
+// FormComponentTypeもzodから生成できます
+export type FormComponentType = FormComponent["component_name"];

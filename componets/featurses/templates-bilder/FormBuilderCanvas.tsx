@@ -13,6 +13,8 @@ interface FormBuilderCanvasProps {
   components: FormComponent[]; // 表示する部品の配列
   selectedComponentId: string | null; // 現在選択されている部品のID
   onSelectComponent: (id: string) => void; // 部品がクリックされたときに親に通知する関数
+  onDeleteComponent: (id: string) => void;
+  onDeselect: () => void;
 }
 
 /**
@@ -26,6 +28,8 @@ export default function FormBuilderCanvas({
   components,
   selectedComponentId,
   onSelectComponent,
+  onDeleteComponent,
+  onDeselect,
 }: FormBuilderCanvasProps) {
   // 部品の種類に応じて、対応するプレビューコンポーネントを返すヘルパー関数
   const renderComponentPreview = (component: FormComponent) => {
@@ -58,8 +62,11 @@ export default function FormBuilderCanvas({
   };
 
   return (
-    <main className="h-full bg-gray-100 py-[50px] px-[8%] border border-gray-300 rounded-lg shadow-inner overflow-y-auto">
-      <div className="bg-white p-[50px]">
+    <main
+      className="h-full bg-gray-100 py-[50px] px-[8%] border border-gray-300 rounded-lg shadow-inner overflow-y-auto"
+      onClick={onDeselect}
+    >
+      <div className="bg-white p-[50px]" onClick={(e) => e.stopPropagation()}>
         {/* 部品が一つもない場合の表示 */}
         {components.length === 0 ? (
           <div className="flex items-center justify-center h-full text-gray-500 border-2 border-dashed border-gray-300 rounded-lg">
@@ -71,10 +78,13 @@ export default function FormBuilderCanvas({
             {components.map((component) => (
               <div
                 key={component.id}
-                onClick={() => onSelectComponent(component.id)}
+                onClick={(e) => {
+                  e.stopPropagation(); // ここでもイベントを止める
+                  onSelectComponent(component.id);
+                }}
                 // 現在選択されている部品かどうかで、枠線のスタイルを動的に変更
                 className={`
-                    p-1 rounded-lg cursor-pointer transition-all bg-white
+                    group relative p-1 rounded-lg cursor-pointer transition-all bg-white
                     ${
                       selectedComponentId === component.id
                         ? "ring-2 ring-blue-500 ring-offset-2" // 選択中のスタイル
@@ -82,6 +92,25 @@ export default function FormBuilderCanvas({
                     }
                   `}
               >
+                <button
+                  onClick={(e) => {
+                    // 親要素のonClickイベントが発火しないようにする
+                    e.stopPropagation();
+                    onDeleteComponent(component.id);
+                  }}
+                  className={`
+                absolute top-0 right-0 z-10 p-1 text-[#F4C2C2] text-3xl rounded-full leading-none transition-opacity
+                ${
+                  selectedComponentId === component.id
+                    ? "text-red-400 opacity-100" // 選択中の場合は常に表示
+                    : "opacity-0 group-hover:opacity-100" // それ以外は、親(group)ホバー時のみ表示
+                }
+              `}
+                  style={{ transform: "translate(15%, -30%)" }} // 右上に配置するための微調整
+                  aria-label="削除"
+                >
+                  ×
+                </button>
                 {renderComponentPreview(component)}
               </div>
             ))}

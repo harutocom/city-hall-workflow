@@ -2,103 +2,141 @@
 
 "use client";
 
+import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast"; // 通知ライブラリ
 import { useState } from "react";
+import { nanoid } from "nanoid";
+import { FormComponent, FormComponentType } from "@/types/template";
 import TemplateMetadataForm from "@/componets/featurses/templates-bilder/TemplateMetadataForm";
 import FormComponentPalette from "@/componets/featurses/templates-bilder/FormComponentPalette";
 import FormBuilderCanvas from "@/componets/featurses/templates-bilder/FormBuilderCanvas";
-import { FormComponent } from "@/types/template";
-const sampleComponents: FormComponent[] = [
-  {
-    id: "id-text-123",
-    component_name: "text",
-    props: {
-      label: "お名前",
-      isRequired: true,
-      placeholder: "例：鈴木 一郎",
-    },
-  },
-  {
-    id: "id-textarea-456",
-    component_name: "textarea",
-    props: {
-      label: "お問い合わせ内容",
-      isRequired: true,
-      placeholder: "ご自由にご記入ください",
-    },
-  },
-  {
-    id: "id-radio-789",
-    component_name: "radio",
-    props: {
-      label: "ご希望の連絡方法",
-      isRequired: true,
-      options: [
-        { label: "メール", value: "email" },
-        { label: "電話", value: "phone" },
-      ],
-    },
-  },
-  {
-    id: "id-checkbox-abc",
-    component_name: "checkbox",
-    props: {
-      label: "興味のある分野（複数選択可）",
-      isRequired: false,
-      options: [
-        { label: "Web開発", value: "web" },
-        { label: "データサイエンス", value: "data" },
-        { label: "UI/UXデザイン", value: "design" },
-      ],
-    },
-  },
-  {
-    id: "id-select-def",
-    component_name: "select",
-    props: {
-      label: "所属部署",
-      isRequired: true,
-      placeholder: "部署を選択してください",
-      options: [
-        { label: "総務課", value: "soumu" },
-        { label: "企画課", value: "kikaku" },
-        { label: "健康福祉課", value: "kenkou" },
-      ],
-    },
-  },
-  {
-    id: "id-date-ghi",
-    component_name: "date",
-    props: {
-      label: "希望日",
-      isRequired: false,
-    },
-  },
-  {
-    id: "id-daterange-jkl",
-    component_name: "date_range",
-    props: {
-      label: "休暇期間",
-      isRequired: true,
-    },
-  },
-];
+import SettingsPanel from "@/componets/featurses/templates-bilder/SettingsPanel";
 
-export default function templateCreatePage() {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [components, setComponents] = useState([]);
-  const [selectedComponentId, setSelectedComponentId] = useState("");
+export default function TemplateCreatePage() {
+  const router = useRouter(); // routerフックを呼び出す
 
-  const handleSubmit = () => {};
-  const onAddComponent = () => {};
-  const onSelectComponent = () => {};
+  const [name, setName] = useState<string>(""); // テンプレート名
+  const [description, setDescription] = useState<string>(""); // テンプレートの説明
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [components, setComponents] = useState<FormComponent[]>([]); // 表示するコンポーネントの配列
+  const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
+    null
+  ); // 選択中のコンポーネント(idのみ)
 
-  //   const onNameChange = () => {};
-  //   const onDescriptionchange = () => {};
+  // selectedIdから選択中のコンポーネントを保持
+  const selectedComponent =
+    components.find((component) => component.id === selectedComponentId) ||
+    null;
+
+  // 実行時GET api/templatesを実行
+  const handleSubmit = async () => {
+    // 1. ローディング状態を開始し、ユーザーに通知
+    setIsLoading(true);
+    toast.loading("テンプレートを作成中...");
+
+    // 2. APIが要求する形式にデータを変換
+    const elements = components.map((component, index) => ({
+      component_name: component.component_name,
+      sort_order: index + 1, // 配列の順番を表示順として利用
+      props: component.props,
+      data_type: "string", // 必要に応じてdata_typeを決定
+    }));
+
+    // 3. 送信するデータ（ペイロード）を作成
+    const payload = { name, description, elements };
+
+    try {
+      // 4. APIエンドポイントにPOSTリクエストを送信
+      const response = await fetch("/api/templates", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      toast.dismiss(); // ローディング通知を消す
+
+      // 5. レスポンスをチェック
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "作成に失敗しました。");
+      }
+
+      // 6. 成功時の処理
+      toast.success("テンプレートを正常に作成しました！");
+      router.push("/settings/templates"); // 一覧ページへ移動
+    } catch (error) {
+      // 7. 失敗時の処理
+      toast.dismiss();
+      toast.error(
+        error instanceof Error ? error.message : "不明なエラーが発生しました。"
+      );
+    } finally {
+      // 8. 成功・失敗にかかわらず、ローディング状態を解除
+      setIsLoading(false);
+    }
+  };
+
+  // パーツを選択したらcomponents配列に追加 typeのみ受け取り初期値を入れる
+  const handleAddComponent = (type: FormComponentType) => {
+    const newComponent: FormComponent = {
+      id: nanoid(),
+      component_name: type,
+      props: {
+        label: "新しい質問",
+        isRequired: false,
+      },
+    };
+
+    setComponents([...components, newComponent]);
+    setSelectedComponentId(newComponent.id);
+  };
+
+  // 選択された部品のidをselectedComponentIdにセット
+  const handleSelectComponent = (id: string) => {
+    setSelectedComponentId(id);
+  };
+
+  // 設定パネルでの変更をcomponents配列に反映
+  const handleUpdateComponent = (
+    id: string,
+    newProps: Partial<FormComponent>
+  ) => {
+    setComponents((currentComponents) =>
+      currentComponents.map((component) => {
+        if (component.id !== id) {
+          return component;
+        }
+        return { ...component, ...newProps };
+      })
+    );
+  };
+
+  /**
+   * 指定されたIDのフォーム部品を配列から削除する（確認なしバージョン）
+   * @param id 削除したい部品のID
+   */
+  const handleDeleteComponent = (id: string) => {
+    // filterを使って、IDが一致しない要素だけを残した新しい配列を作る
+    setComponents((currentComponents) =>
+      currentComponents.filter((component) => component.id !== id)
+    );
+
+    // もし削除した部品が現在選択中の部品だったら、選択状態を解除する
+    if (selectedComponentId === id) {
+      setSelectedComponentId(null);
+    }
+  };
+
+  /**
+   * 全ての部品の選択を解除する
+   */
+  const handleDeselect = () => {
+    setSelectedComponentId(null);
+  };
+
   return (
     <>
-      {" "}
+      <Toaster position="top-center" />
       <div className="p-4 border-b">
         <div className="max-w-4xl mx-auto flex items-start justify-between">
           {/* 左側：先ほど作成したフォームコンポーネント */}
@@ -135,14 +173,23 @@ export default function templateCreatePage() {
         </div>
       </div>
       <div className="flex">
-        <div className="w-[320px]">
-          <FormComponentPalette onAddComponent={onAddComponent} />
+        <div className="w-[25%]">
+          <FormComponentPalette onAddComponent={handleAddComponent} />
         </div>
         <div className="w-full">
           <FormBuilderCanvas
-            components={sampleComponents}
+            components={components}
             selectedComponentId={selectedComponentId}
-            onSelectComponent={onSelectComponent}
+            onSelectComponent={handleSelectComponent}
+            onDeleteComponent={handleDeleteComponent}
+            onDeselect={handleDeselect}
+          />
+        </div>
+        <div className="w-[25%]">
+          <SettingsPanel
+            selectedComponent={selectedComponent}
+            onUpdateComponent={handleUpdateComponent}
+            key={selectedComponentId}
           />
         </div>
       </div>
