@@ -136,7 +136,7 @@ export async function PUT(
 
       // 子テーブルのtemplate_elementsのデータを一括削除
       await tx.template_elements.deleteMany({
-        where: { id: templateId },
+        where: { template_id: templateId },
       });
 
       // テンプレに必要な複数のフロントからのデータを配列として持っておく
@@ -225,7 +225,7 @@ export async function DELETE(
     await db.$transaction(async (tx) => {
       // templateIdのデータをtemplate_elementsテーブルから削除
       await tx.template_elements.deleteMany({
-        where: { id: templateId },
+        where: { template_id: templateId },
       });
 
       // templateIdのデータをapplication_templatesテーブルから削除
