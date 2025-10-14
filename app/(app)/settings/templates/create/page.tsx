@@ -17,7 +17,7 @@ export default function TemplateCreatePage() {
 
   const [name, setName] = useState<string>(""); // テンプレート名
   const [description, setDescription] = useState<string>(""); // テンプレートの説明
-  const [isLoading, setIsLoading] = useState<boolean>(false); // ロード中かどうｋ(テンプレート作成時)
+  const [isLoading, setIsLoading] = useState<boolean>(false); // ロード中かどうか(テンプレート作成時)
   const [components, setComponents] = useState<FormComponent[]>([]); // 表示するコンポーネントの配列
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
     null
