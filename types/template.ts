@@ -1,5 +1,4 @@
 // types/template.ts
-// types/template.ts
 import { z } from "zod";
 
 // Optionのスキーマ
