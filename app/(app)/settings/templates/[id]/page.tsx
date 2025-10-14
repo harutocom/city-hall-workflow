@@ -1,3 +1,6 @@
+// app/(app)/settings/templates/[id]/page.tsx
+// テンプレートの詳細情報を取得するページ
+
 "use client";
 
 import { useState, useEffect } from "react";
@@ -9,7 +12,6 @@ import toast, { Toaster } from "react-hot-toast";
 import { FormComponent } from "@/types/template";
 
 // --- プレビューコンポーネントをインポート ---
-// ファイルパスは実際の構成に合わせてください
 import Check from "@/componets/featurses/Check";
 import DateInput from "@/componets/featurses/DateInput";
 import DateRange from "@/componets/featurses/DateRange";
@@ -26,7 +28,7 @@ interface TemplateDetail {
   template_elements: FormComponent[];
 }
 
-// 部品の種類に応じて描画するコンポーネントを決定するヘルパー関数
+// 部品の種類に応じて描画するコンポーネントを決定する関数
 const renderComponentPreview = (component: FormComponent) => {
   const props = component.props || {};
   switch (component.component_name) {
@@ -63,7 +65,7 @@ export default function TemplateDetailPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  // --- データ取得ロジック (変更なし) ---
+  // --- データ取得ロジック ---
   useEffect(() => {
     if (!id) return;
 
@@ -87,11 +89,13 @@ export default function TemplateDetailPage() {
     fetchTemplate();
   }, [id]);
 
-  // --- 削除処理ロジック (変更なし) ---
+  // --- 削除処理ロジック ---
   const handleDelete = async () => {
-    if (!template) return;
+    if (!template) return; // テンプレートが無かったら何もしない
+
+    // 確認ウィンドウを表示
     if (!window.confirm(`「${template.name}」を本当に削除しますか？`)) {
-      return;
+      return; // キャンセルなら中断
     }
 
     toast.loading("テンプレートを削除中...");
@@ -114,7 +118,7 @@ export default function TemplateDetailPage() {
     }
   };
 
-  // --- レンダリング中の表示 (変更なし) ---
+  // --- レンダリング中の表示 ---
   if (isLoading) return <div className="p-8 text-center">読み込み中...</div>;
   if (error)
     return <div className="p-8 text-center text-red-500">エラー: {error}</div>;
@@ -123,7 +127,6 @@ export default function TemplateDetailPage() {
       <div className="p-8 text-center">テンプレートが見つかりません。</div>
     );
 
-  // --- ★★★ 新しいレイアウト ★★★ ---
   return (
     <div className="p-8 max-w-4xl mx-auto">
       <Toaster position="top-center" />

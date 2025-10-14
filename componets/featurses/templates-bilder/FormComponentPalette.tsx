@@ -1,5 +1,7 @@
 // componets/features/templates-bilder/FormComponentPalette.tsx
+
 import { FormComponentType } from "@/types/template";
+
 interface FormComponentPaletteProps {
   // ユーザーが部品ボタンをクリックしたときに呼び出す関数
   onAddComponent: (type: FormComponentType) => void;
@@ -11,6 +13,7 @@ interface PaletteItem {
   description: string;
 }
 
+// パレットに表示するコンポーネントのデータ
 const PALETTE_ITEMS: PaletteItem[] = [
   {
     type: "text",

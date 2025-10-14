@@ -13,8 +13,11 @@ interface SettingsPanelProps {
 }
 
 /**
- * 選択されたフォーム部品の設定を行う右側のパネル
+ * 選択しているパーツの設定を行うコンポーネント
+ * @param selectedComponent - 選択中のコンポーネント
+ * @param onUpdateComponent - コンポーネントの設定を入力されたものに更新する関数
  */
+
 export default function SettingsPanel({
   selectedComponent,
   onUpdateComponent,
@@ -35,13 +38,21 @@ export default function SettingsPanel({
 
   // --- イベントハンドラ ---
 
-  // props内の特定のキーの値を更新する汎用関数
+  /**
+   *propsを入力されたpropsにonUpdateComponentを使い更新する関数
+   * @param key
+   * @param value
+   */
   const handlePropsChange = (key: keyof ComponentProps, value: any) => {
     const newProps = { ...selectedComponent.props, [key]: value };
     onUpdateComponent(selectedComponent.id, { props: newProps });
   };
 
   // 選択肢を追加する関数
+
+  /**
+   * チェックボックスやラジオボタンなどの選択肢を追加する関数
+   */
   const handleAddOption = () => {
     const newOption: Option = {
       label: "新しい選択肢",
@@ -51,7 +62,11 @@ export default function SettingsPanel({
     handlePropsChange("options", [...currentOptions, newOption]);
   };
 
-  // 特定の選択肢を更新する関数
+  /**
+   * チェックボックスやラジオボタンなどの選択肢を更新する関数
+   * @param index - 更新したい選択肢のindex
+   * @param newLabel - 新しい選択肢のlabel
+   */
   const handleUpdateOption = (index: number, newLabel: string) => {
     const newOptions = [...(selectedComponent.props.options || [])];
     newOptions[index] = {
@@ -62,7 +77,10 @@ export default function SettingsPanel({
     handlePropsChange("options", newOptions);
   };
 
-  // 特定の選択肢を削除する関数
+  /**
+   * チェックボックスやラジオボタンの選択肢を消す関数
+   * @param index - 消したい選択肢のindex
+   */
   const handleDeleteOption = (index: number) => {
     const newOptions = (selectedComponent.props.options || []).filter(
       (_, i) => i !== index

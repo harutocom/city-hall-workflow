@@ -12,7 +12,7 @@ export async function GET(
   { params }: { params: { id: string } }
 ) {
   try {
-    // 取得したparamsをzodスキーマを使い検証
+    // 取得したparamsをzodスキーマを使い検証し、変換する
     const { id: templateId } = TemplateIdParamSchema.parse(params);
 
     // テンプレートとその詳細をapplication_templatesとtemplate_elementsから取得

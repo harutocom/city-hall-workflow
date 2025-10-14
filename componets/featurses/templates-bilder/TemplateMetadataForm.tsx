@@ -27,7 +27,6 @@ export default function TemplateMetadataForm({
       <div>
         <label
           htmlFor="template-name"
-          // デザインに合わせたラベルのスタイル
           className="inline-block bg-[#1F6C7E] text-white px-4 py-1 text-sm font-semibold rounded-t-md"
         >
           テンプレート名
@@ -39,7 +38,6 @@ export default function TemplateMetadataForm({
           value={name}
           onChange={(e) => onNameChange(e.target.value)}
           required
-          // ラベルの下にくっつくように、上部の角丸はなしにします
           className="block w-full rounded-b-md rounded-r-md border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-[#008080]"
         />
       </div>

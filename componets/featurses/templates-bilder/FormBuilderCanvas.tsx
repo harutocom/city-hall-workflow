@@ -1,6 +1,7 @@
 // componets/features/templates-bilder/FormBuilderCanvas.tsx
 import { FormComponent } from "@/types/template";
 
+// テンプレートのコンポーネントをすべてインポート
 import Check from "../Check";
 import DateInput from "../DateInput";
 import DateRange from "../DateRange";
@@ -106,7 +107,7 @@ export default function FormBuilderCanvas({
                     : "opacity-0 group-hover:opacity-100" // それ以外は、親(group)ホバー時のみ表示
                 }
               `}
-                  style={{ transform: "translate(15%, -30%)" }} // 右上に配置するための微調整
+                  style={{ transform: "translate(15%, -30%)" }}
                   aria-label="削除"
                 >
                   ×

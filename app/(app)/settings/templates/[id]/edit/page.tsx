@@ -1,3 +1,7 @@
+// app/(app)/settings/templates/[id]/edit.page.tsx
+// 作成済みテンプレートを編集する画面
+// ほとんどcreate画面と同じで初期値に作成済みテンプレートのデータを入れているだけ
+
 "use client";
 
 import { useRouter, useParams } from "next/navigation";
@@ -19,6 +23,10 @@ interface TemplateDetail {
   template_elements: FormComponent[];
 }
 
+/**
+ * 作成済みテンプレートを編集する画面
+ * @returns - 編集画面
+ */
 export default function TemplateEditPage() {
   const router = useRouter();
   const params = useParams();
@@ -33,10 +41,14 @@ export default function TemplateEditPage() {
     null
   );
 
-  // --- ★ 変更点1: データ取得ロジックを追加 ---
+  // useEffectを使い、レンダリングされたらDBからデータを取得Sる
   useEffect(() => {
     if (!id) return; // idがなければ何もしない
 
+    /**
+     * テンプレートのデータを取得しセットする関数
+     * GET /api/templates/${id}を使ってる
+     */
     const fetchTemplateData = async () => {
       setIsLoading(true);
       try {
@@ -73,9 +85,11 @@ export default function TemplateEditPage() {
     components.find((component) => component.id === selectedComponentId) ||
     null;
 
-  // --- ★ 変更点2: handleSubmitをhandleUpdateに修正 ---
+  /**
+   * テンプレートの変更内容をDBに反映する関数
+   */
   const handleUpdate = async () => {
-    setIsLoading(true);
+    setIsLoading(true); // ローディング中に変更
     toast.loading("テンプレートを更新中...");
 
     const elements = components.map((component, index) => ({
@@ -102,7 +116,7 @@ export default function TemplateEditPage() {
       }
 
       toast.success("テンプレートを正常に更新しました！");
-      // 要件通り、詳細ページに戻る
+      // 詳細ページに戻る
       router.push(`/settings/templates/${id}`);
       router.refresh();
     } catch (error) {
@@ -115,7 +129,7 @@ export default function TemplateEditPage() {
     }
   };
 
-  // --- 作成画面から流用した関数 (変更なし) ---
+  // --- 作成画面から流用した関数 ---
   const handleAddComponent = (type: FormComponentType) => {
     const newComponent: FormComponent = {
       id: nanoid(),
@@ -154,7 +168,6 @@ export default function TemplateEditPage() {
     setSelectedComponentId(null);
   };
 
-  // --- レンダリング (JSX) ---
   return (
     <>
       <Toaster position="top-center" />
@@ -169,7 +182,6 @@ export default function TemplateEditPage() {
             />
           </div>
           <div className="flex flex-col gap-4">
-            {/* ★ 変更点3: ボタンのテキストとonClickイベントを変更 */}
             <button
               onClick={handleUpdate}
               disabled={isLoading}
