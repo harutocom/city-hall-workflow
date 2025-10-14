@@ -41,7 +41,7 @@ export default function TemplateEditPage() {
     null
   );
 
-  // useEffectを使い、レンダリングされたらDBからデータを取得Sる
+  // useEffectを使い、レンダリングされたらDBからデータを取得する
   useEffect(() => {
     if (!id) return; // idがなければ何もしない
 
