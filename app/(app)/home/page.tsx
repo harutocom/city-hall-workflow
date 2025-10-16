@@ -35,8 +35,7 @@ export default function Home() {
           <button className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#21838e] cursor-pointer">
             <img
               src="/TimeLimit.png"
-              alt="a
-              TimeLimit"
+              alt="aTimeLimit"
               className="absolute top-4 right-4"
             />
             <p className="absolute top-4 left-4">残り時間</p>
