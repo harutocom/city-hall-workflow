@@ -9,12 +9,12 @@ import { TemplateSchema } from "@/schemas/template";
 // 個々のテンプレ詳細を取得
 export async function GET(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const { params } = context;
+    const { id } = await params;
     // 取得したparamsをzodスキーマを使い検証し、変換する
-    const { id: templateId } = TemplateIdParamSchema.parse(params);
+    const { id: templateId } = TemplateIdParamSchema.parse({ id });
 
     // テンプレートとその詳細をapplication_templatesとtemplate_elementsから取得
     const template = await db.application_templates.findUnique({
@@ -80,13 +80,13 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context;
+  const { id } = await params;
 
   try {
     // テンプレートIDをパラメーターから取得
-    const { id: templateId } = TemplateIdParamSchema.parse(params);
+    const { id: templateId } = TemplateIdParamSchema.parse({ id });
 
     // tokenを取得
     const token = await getToken({
@@ -190,13 +190,13 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  context: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { params } = context;
+  const { id } = await params;
 
   try {
     // テンプレートIDをパラメーターから取得
-    const { id: templateId } = TemplateIdParamSchema.parse(params);
+    const { id: templateId } = TemplateIdParamSchema.parse({ id });
 
     // tokenを取得
     const token = await getToken({
