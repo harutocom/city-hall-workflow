@@ -9,9 +9,10 @@ import { TemplateSchema } from "@/schemas/template";
 // 個々のテンプレ詳細を取得
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
   try {
+    const { params } = context;
     // 取得したparamsをzodスキーマを使い検証し、変換する
     const { id: templateId } = TemplateIdParamSchema.parse(params);
 
@@ -79,8 +80,10 @@ export async function GET(
 
 export async function PUT(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
+
   try {
     // テンプレートIDをパラメーターから取得
     const { id: templateId } = TemplateIdParamSchema.parse(params);
@@ -187,8 +190,10 @@ export async function PUT(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  context: { params: { id: string } }
 ) {
+  const { params } = context;
+
   try {
     // テンプレートIDをパラメーターから取得
     const { id: templateId } = TemplateIdParamSchema.parse(params);
