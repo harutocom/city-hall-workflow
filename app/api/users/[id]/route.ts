@@ -121,3 +121,59 @@ export async function GET(
     );
   }
 }
+
+// export async function DELETE(
+//   request: NextRequest,
+//   { params }: { params: Promise<{ id: string }> }
+// ) {
+//   const { id } = await params;
+
+//   // tokenの情報を取得
+//   const token = await getToken({
+//     req: request,
+//     secret: process.env.NEXTAUTH_SECRET,
+//   });
+
+//   // 念のためtokenが存在するか(ログイン状態かどうか)を確認
+//   if (!token) {
+//     // tokenが無かったらエラーを返す
+//     return NextResponse.json({
+//       message: "ログインされていません。",
+//       status: 401,
+//     });
+//   }
+//   // 取得したtokenから必要な情報を変数へ代入
+//   const userId = token.id;
+//   const userPermissions = token.permission_ids; // userの権限の配列
+//   const targetPermission = 1; // テンプレート作成に必要な権限ID
+
+//   // userに権限があるかを確認
+//   if (!userPermissions.includes(targetPermission)) {
+//     // 権限が無い場合エラーを返す
+//     console.error(`status:403 ${userId}はユーザー一覧の閲覧権限がありません`);
+//     return NextResponse.json({
+//       message: "ユーザー一覧の閲覧権限がありません",
+//       status: 403,
+//     });
+//   }
+//   try {
+//     const { id: targetUserId } = UserIdParamSchema.parse(id);
+
+//     if (targetUserId === parseInt(userId, 10)) {
+//       return NextResponse.json(
+//         { message: "自分自身のアカウントは無効化できません。" },
+//         { status: 400 }
+//       );
+//     }
+
+//     await db.users.update({
+//       where: {
+//         id: targetUserId,
+//       },
+//       data:{
+
+//       }
+//     })
+
+//   } catch (error) {}
+// }
