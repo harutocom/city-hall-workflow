@@ -38,6 +38,9 @@ export async function GET(request: NextRequest) {
   // 権限があればデータを取得
   try {
     const users = await db.users.findMany({
+      where: {
+        deleted_at: null,
+      },
       select: {
         id: true,
         name: true,
