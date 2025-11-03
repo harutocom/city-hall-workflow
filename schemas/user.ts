@@ -25,10 +25,15 @@ export const UserCreateSchema = z.object({
     .min(1, { message: "権限は少なくとも1つ必要です。" }),
 });
 
-export const UserUpdateSchema = z.object({
-  name: z.string().min(1).optional(),
-  email: z.string().email().optional(),
-  department_id: z.number().int().positive().optional(),
-  role_id: z.number().int().positive().optional(),
-  permission_ids: z.number().int().min(1).optional(),
-});
+export const UserUpdateSchema = UserCreateSchema.partial();
+
+// export const UserUpdateSchema = z.object({
+//   name: z.string().min(1).optional(),
+//   email: z.string().email().optional(),
+//   password: z
+//     .string()
+//     .min(8, { message: "パスワードは8文字以上で設定してください。" }).optional,
+//   department_id: z.number().int().positive().optional(),
+//   role_id: z.number().int().positive().optional(),
+//   permission_id: z.number().int().min(1).optional(),
+// });

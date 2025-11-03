@@ -7,6 +7,11 @@ import bcrypt from "bcrypt";
 import { UserCreateSchema } from "@/schemas/user";
 import { z } from "zod";
 
+/**
+ * ユーザー一覧を取得するAPI
+ * @param request
+ * @returns
+ */
 export async function GET(request: NextRequest) {
   // tokenの情報を取得
   const token = await getToken({
@@ -69,7 +74,11 @@ export async function GET(request: NextRequest) {
   }
 }
 
-// ユーザーを作成するAPI
+/**
+ * ユーザーを作成するAPI
+ * @param request
+ * @returns
+ */
 export async function POST(request: NextRequest) {
   // tokenの情報を取得
   const token = await getToken({
@@ -174,7 +183,7 @@ export async function POST(request: NextRequest) {
       );
     }
     // zod以外のエラーの場合は普通にerrorを返す
-    console.error("テンプレート作成中のエラー", error);
+    console.error("ユーザー作成中のエラー", error);
     console.error("[REGISTRATION_ERROR]", error);
     return new NextResponse("Internal Error", { status: 500 });
   }
