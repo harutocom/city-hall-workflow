@@ -56,6 +56,16 @@ export async function GET(request: NextRequest) {
         role_id: true,
         created_at: true,
         updated_at: true,
+        user_permissions: {
+          select: {
+            permissions: {
+              select: {
+                id: true,
+                name: true,
+              },
+            },
+          },
+        },
       },
 
       orderBy: {
