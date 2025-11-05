@@ -1,4 +1,5 @@
 // src/mocks/master-data.ts
+// 編集ページ用
 
 /**
  * 部署マスタ (departments)

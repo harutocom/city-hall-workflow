@@ -1,4 +1,5 @@
 // src/mocks/dummy-user-detail.ts
+// 編集ページ用
 
 export const DUMMY_USER_DETAIL = {
   name: "山田 次郎",

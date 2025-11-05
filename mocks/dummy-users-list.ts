@@ -1,4 +1,5 @@
 // src/mocks/dummy-users-list.ts
+// 一覧ページ用
 
 export const DUMMY_USERS_LIST = [
   {
