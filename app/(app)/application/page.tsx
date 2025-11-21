@@ -1,6 +1,6 @@
 "use client";
 import ReminingTime from "@/components/features/ReminingTime";
-import PreviewTemplate from "@/components/features/PreviewTemplates";
+import PreviewTemplate from "@/components/features/GetTemplates";
 import { Button } from "@/components/ui/button";
 
 export default function Application() {
