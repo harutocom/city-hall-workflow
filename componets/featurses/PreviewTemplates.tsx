@@ -2,7 +2,6 @@
 import { FormComponent } from "@/types/template";
 import { useState, useEffect } from "react";
 import { renderComponentPreview } from "@/app/(app)/settings/templates/[id]/page";
-import { useParams, useRouter } from "next/navigation";
 
 interface TemplateDetail {
   id: number;
@@ -11,24 +10,35 @@ interface TemplateDetail {
   template_elements: FormComponent[];
 }
 
-export default function PreviewTemplate() {
-  const router = useRouter();
-  const params = useParams();
-  const id = params.id as string;
+interface PreviewTemplateProps {
+  templateId: string;
+}
+
+// コンポーネントの引数を修正
+export default function PreviewTemplate({ templateId }: PreviewTemplateProps) {
+  const id = templateId;
+
   const [template, setTemplate] = useState<TemplateDetail | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
   // --- データ取得ロジック ---
   useEffect(() => {
-    if (!id) return;
+    // propsとしてIDが渡されているかチェック
+    if (!id) {
+      setIsLoading(false);
+      setError("プレビューするテンプレートIDが指定されていません。");
+      return;
+    }
 
     const fetchTemplate = async () => {
       try {
         setIsLoading(true);
         const response = await fetch(`/api/templates/${id}`);
         if (!response.ok) {
-          throw new Error("テンプレートの取得に失敗しました。");
+          throw new Error(
+            `テンプレートの取得に失敗しました (Status: ${response.status})。`
+          );
         }
         const data = await response.json();
         setTemplate(data.template);
@@ -42,21 +52,27 @@ export default function PreviewTemplate() {
     };
     fetchTemplate();
   }, [id]);
-  if (!template) {
+
+  if (isLoading) {
     return <p>読み込み中...</p>;
+  }
+
+  if (error) {
+    return <p className="text-red-600">エラー: {error}</p>;
+  }
+
+  if (!template) {
+    return <p>テンプレート情報が見つかりませんでした。</p>;
   }
 
   return (
     <>
       <section>
-        <h2 className="text-xl font-semibold text-gray-800 mb-3">プレビュー</h2>
         <div className="bg-gray-100 p-8 border border-gray-200 rounded-lg shadow-inner">
           <div className="bg-white p-8 space-y-6 rounded-md">
             {template.template_elements.length > 0 ? (
               template.template_elements.map((component) => (
                 <div key={component.id}>
-                  {" "}
-                  {/* DBのidがない場合に備えてsort_orderをフォールバック */}
                   {renderComponentPreview(component)}
                 </div>
               ))

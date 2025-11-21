@@ -1,6 +1,7 @@
 "use client";
 import ReminingTime from "@/componets/featurses/ReminingTime";
 import PreviewTemplate from "@/componets/featurses/PreviewTemplates";
+import Button from "@/componets/ui/Button";
 
 export default function Application() {
   return (
@@ -12,7 +13,10 @@ export default function Application() {
           </div>
           <div className="flex flex-col p-8 rounded-b-[16px] rounded-t-none shadow-md shadow-black/60 bg-white gap-4">
             <ReminingTime reminingTime={6} />
-            <PreviewTemplate />
+            <PreviewTemplate templateId="6" />
+            <div className="flex">
+              <Button placeholder="送信" type="submit" />
+            </div>
           </div>
         </div>
       </div>
