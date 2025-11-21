@@ -11,7 +11,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         default:
-          "flex justify-center items-center bg-[#CB223F] h-[50px] w-[150px] text-white rounded-[8px] hover:bg-[#df4a63]",
+          "flex justify-center items-center bg-[#CB223F] h-[50px] w-[150px] text-white rounded-[8px] hover:bg-[#df4a63] cursor-pointer",
         destructive:
           "bg-destructive text-white hover:bg-destructive/90 focus-visible:ring-destructive/20 dark:focus-visible:ring-destructive/40 dark:bg-destructive/60",
         outline:
