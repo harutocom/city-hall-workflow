@@ -1,5 +1,7 @@
-import TextArea from "@/componets/featurses/TextArea";
-import ReminingTime from "@/componets/featurses/reminingTime";
+"use client";
+import ReminingTime from "@/componets/featurses/ReminingTime";
+import PreviewTemplate from "@/componets/featurses/PreviewTemplates";
+
 export default function Application() {
   return (
     <>
@@ -10,6 +12,7 @@ export default function Application() {
           </div>
           <div className="flex flex-col p-8 rounded-b-[16px] rounded-t-none shadow-md shadow-black/60 bg-white gap-4">
             <ReminingTime reminingTime={6} />
+            <PreviewTemplate />
           </div>
         </div>
       </div>

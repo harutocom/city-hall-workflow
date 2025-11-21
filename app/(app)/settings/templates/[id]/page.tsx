@@ -29,7 +29,7 @@ interface TemplateDetail {
 }
 
 // 部品の種類に応じて描画するコンポーネントを決定する関数
-const renderComponentPreview = (component: FormComponent) => {
+export const renderComponentPreview = (component: FormComponent) => {
   const props = component.props || {};
   switch (component.component_name) {
     case "text":
