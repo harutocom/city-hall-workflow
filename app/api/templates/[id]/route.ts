@@ -72,7 +72,7 @@ export async function GET(
     console.error(error);
 
     return NextResponse.json(
-      { message: "テンプレートの詳細データの取得に失敗しました。" },
+      { message: "テンプレートの詳細データ取得に失敗しました。" },
       { status: 500 }
     );
   }
