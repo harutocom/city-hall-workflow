@@ -72,8 +72,11 @@ export async function POST(request: NextRequest) {
         } else if (typeof v === "string") {
           // 文字列の場合、日付形式かどうかチェック
           const d = new Date(v);
-          // 「Dateとして有効」かつ「ISO形式っぽい文字列」なら日付とみなす
-          if (!isNaN(d.getTime()) && v.includes("-") && v.includes("T")) {
+
+          // 2025-11-22みたいな最初が数字4つ-数字2つ-数字2つの形式を日付とする
+          const looksLikeDate = /^\d{4}-\d{2}-\d{2}/.test(v);
+
+          if (!isNaN(d.getTime()) && looksLikeDate) {
             valDate = d;
           } else {
             // それ以外はただのテキスト
