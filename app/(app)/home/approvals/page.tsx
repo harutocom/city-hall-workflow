@@ -144,7 +144,7 @@ export default function ApprovalsListPage() {
                   {/* 詳細リンク */}
                   <td className="p-3">
                     <Link
-                      href={`/approvals/${item.id}`}
+                      href={`/home/approvals/${item.id}`}
                       className="text-blue-500 hover:underline font-medium"
                     >
                       詳細

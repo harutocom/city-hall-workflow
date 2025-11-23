@@ -46,8 +46,11 @@ export async function GET(
               select: { name: true, department_id: true },
             },
             application_templates: {
-              // テンプレート名
-              select: { name: true },
+              include: {
+                template_elements: {
+                  orderBy: { sort_order: "asc" },
+                },
+              },
             },
             // 申請された値も一緒に取ってくる
             application_values: {
