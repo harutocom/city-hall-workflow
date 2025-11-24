@@ -10,10 +10,10 @@ import toast, { Toaster } from "react-hot-toast";
 import { useState, useEffect } from "react";
 import { nanoid } from "nanoid";
 import { FormComponent, FormComponentType } from "@/types/template";
-import TemplateMetadataForm from "@/componets/featurses/templates-bilder/TemplateMetadataForm";
-import FormComponentPalette from "@/componets/featurses/templates-bilder/FormComponentPalette";
-import FormBuilderCanvas from "@/componets/featurses/templates-bilder/FormBuilderCanvas";
-import SettingsPanel from "@/componets/featurses/templates-bilder/SettingsPanel";
+import TemplateMetadataForm from "@/components/features/templates-bilder/TemplateMetadataForm";
+import FormComponentPalette from "@/components/features/templates-bilder/FormComponentPalette";
+import FormBuilderCanvas from "@/components/features/templates-bilder/FormBuilderCanvas";
+import SettingsPanel from "@/components/features/templates-bilder/SettingsPanel";
 
 // APIから取得するテンプレート詳細データの型
 interface TemplateDetail {

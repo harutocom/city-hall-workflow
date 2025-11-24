@@ -12,13 +12,13 @@ import toast, { Toaster } from "react-hot-toast";
 import { FormComponent } from "@/types/template";
 
 // --- プレビューコンポーネントをインポート ---
-import Check from "@/componets/featurses/Check";
-import DateInput from "@/componets/featurses/DateInput";
-import DateRange from "@/componets/featurses/DateRange";
-import Radio from "@/componets/featurses/Radio";
-import Select from "@/componets/featurses/Select";
-import TextArea from "@/componets/featurses/TextArea";
-import TextEntry from "@/componets/featurses/TextEntry";
+import Check from "@/components/features/Check";
+import DateInput from "@/components/features/DateInput";
+import DateRange from "@/components/features/DateRange";
+import Radio from "@/components/features/Radio";
+import Select from "@/components/features/Select";
+import TextArea from "@/components/features/TextArea";
+import TextEntry from "@/components/features/TextEntry";
 
 // APIから取得するテンプレート詳細データの型
 interface TemplateDetail {
