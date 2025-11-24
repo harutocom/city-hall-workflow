@@ -53,7 +53,7 @@ export default function ApprovalDetailPage() {
       } catch (error) {
         console.error(error);
         alert("データの取得に失敗しました。");
-        router.push("/approvals");
+        router.push("/home/approvals");
       } finally {
         setLoading(false);
       }
