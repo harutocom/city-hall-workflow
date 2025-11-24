@@ -11,8 +11,11 @@
   "dependencies": {
     "@next/font": "^14.2.15",
     "@prisma/client": "^6.16.1",
+    "@radix-ui/react-slot": "^1.2.4",
     "@types/bcrypt": "^6.0.0",
     "bcrypt": "^6.0.0",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
     "nanoid": "^5.1.6",
     "next": "15.5.2",
     "next-auth": "^4.24.11",
@@ -20,8 +23,8 @@
     "react": "19.1.0",
     "react-dom": "19.1.0",
     "react-hot-toast": "^2.6.0",
+    "tailwind-merge": "^3.4.0",
     "zod": "^4.1.11"
-
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

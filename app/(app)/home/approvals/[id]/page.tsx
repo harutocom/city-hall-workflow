@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 // 作成したコンポーネントをインポート
-import ApplicationDetailViewer from "@/componets/featurses/applications/ApplicationDetailViewer";
+import ApplicationDetailViewer from "@/components/features/applications/ApplicationDetailViewer";
 import { FormComponent } from "@/types/template";
 
 // 型定義 (APIのレスポンスに合わせる)
@@ -97,7 +97,10 @@ export default function ApprovalDetailPage() {
   return (
     <main className="max-w-4xl mx-auto py-10 px-4">
       <div className="mb-4">
-        <Link href="/home/approvals" className="text-gray-500 hover:text-gray-700">
+        <Link
+          href="/home/approvals"
+          className="text-gray-500 hover:text-gray-700"
+        >
           &lt; 一覧に戻る
         </Link>
       </div>

@@ -44,78 +44,84 @@ export async function POST(request: NextRequest) {
     const applicant_id = parsedToken.data.id; // 申請者をtokenから取得
 
     // トランザクション処理開始
-    const result = await db.$transaction(async (tx) => {
-      // フロントからのデータを親テーブル(applications)に保存
-      const newApplication = await tx.applications.create({
-        data: {
-          applicant_id: applicant_id,
-          template_id: template_id,
-          status: status,
-        },
-      });
+    const result = await db.$transaction(
+      async (tx) => {
+        // フロントからのデータを親テーブル(applications)に保存
+        const newApplication = await tx.applications.create({
+          data: {
+            applicant_id: applicant_id,
+            template_id: template_id,
+            status: status,
+          },
+        });
 
-      // フロントからのデータを型によって整理
-      const newApplicationValues = values.map((item) => {
-        let valText: string | null = null;
-        let valNumber: number | null = null;
-        let valDate: Date | null = null;
-        let valBool: boolean | null = null;
+        // フロントからのデータを型によって整理
+        const newApplicationValues = values.map((item) => {
+          let valText: string | null = null;
+          let valNumber: number | null = null;
+          let valDate: Date | null = null;
+          let valBool: boolean | null = null;
 
-        const v = item.value;
+          const v = item.value;
 
-        if (typeof v === "number") {
-          // 数値の場合
-          valNumber = v;
-        } else if (typeof v === "boolean") {
-          // 真偽値の場合
-          valBool = v;
-        } else if (typeof v === "string") {
-          // 文字列の場合、日付形式かどうかチェック
-          const d = new Date(v);
+          if (typeof v === "number") {
+            // 数値の場合
+            valNumber = v;
+          } else if (typeof v === "boolean") {
+            // 真偽値の場合
+            valBool = v;
+          } else if (typeof v === "string") {
+            // 文字列の場合、日付形式かどうかチェック
+            const d = new Date(v);
 
-          // 2025-11-22みたいな最初が数字4つ-数字2つ-数字2つの形式を日付とする
-          const looksLikeDate = /^\d{4}-\d{2}-\d{2}/.test(v);
+            // 2025-11-22みたいな最初が数字4つ-数字2つ-数字2つの形式を日付とする
+            const looksLikeDate = /^\d{4}-\d{2}-\d{2}/.test(v);
 
-          if (!isNaN(d.getTime()) && looksLikeDate) {
-            valDate = d;
-          } else {
-            // それ以外はただのテキスト
-            valText = v;
+            if (!isNaN(d.getTime()) && looksLikeDate) {
+              valDate = d;
+            } else {
+              // それ以外はただのテキスト
+              valText = v;
+            }
           }
+
+          return {
+            application_id: newApplication.id,
+            sort_order: item.sort_order, // フロントから送られてきた順序を使用
+            value_text: valText,
+            value_number: valNumber,
+            value_datetime: valDate,
+            value_boolean: valBool,
+          };
+        });
+
+        // 申請内容を保存
+        if (newApplicationValues.length > 0) {
+          await tx.application_values.createMany({
+            data: newApplicationValues,
+          });
         }
 
-        return {
-          application_id: newApplication.id,
-          sort_order: item.sort_order, // フロントから送られてきた順序を使用
-          value_text: valText,
-          value_number: valNumber,
-          value_datetime: valDate,
-          value_boolean: valBool,
-        };
-      });
+        // 申請された場合のみ承認フローを保存
+        if (status === "pending" && approvers.length > 0) {
+          const flowData = approvers.map((approver) => ({
+            application_id: newApplication.id,
+            approver_id: approver.approver_id,
+            action: "pending", // まだ承認されていないので "pending" とする
+            comment: null,
+          }));
 
-      // 申請内容を保存
-      if (newApplicationValues.length > 0) {
-        await tx.application_values.createMany({
-          data: newApplicationValues,
-        });
+          await tx.approval_flows.createMany({
+            data: flowData,
+          });
+        }
+        return newApplication;
+      },
+      {
+        maxWait: 5000, // 開始待ち: 2秒 -> 5秒に延長
+        timeout: 10000, // 実行時間: 5秒 -> 10秒に延長
       }
-
-      // 申請された場合のみ承認フローを保存
-      if (status === "pending" && approvers.length > 0) {
-        const flowData = approvers.map((approver) => ({
-          application_id: newApplication.id,
-          approver_id: approver.approver_id,
-          action: "pending", // まだ承認されていないので "pending" とする
-          comment: null,
-        }));
-
-        await tx.approval_flows.createMany({
-          data: flowData,
-        });
-      }
-      return newApplication;
-    });
+    );
 
     // 成功時のレスポンス
     return NextResponse.json(result, { status: 201 });

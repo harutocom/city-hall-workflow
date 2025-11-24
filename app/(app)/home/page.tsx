@@ -1,12 +1,16 @@
 import React from "react";
+import Link from "next/link";
 
 export default function Home() {
   return (
     <div className="min-h-screen w-full bg-[#F4F6F8]">
       <div className="flex flex-col px-38 pt-48 pb-16 gap-12">
-        <button className="h-28 bg-[#1F6C7E] text-white text-4xl font-bold rounded-[16px] shadow-md shadow-black/60 hover:bg-[#21838e] cursor-pointer">
+        <Link
+          href="/home/application"
+          className="h-28 bg-[#1F6C7E] flex justify-center items-center text-white text-4xl font-bold rounded-[16px] shadow-md shadow-black/60 hover:bg-[#21838e] cursor-pointer"
+        >
           <p>申請する</p>
-        </button>
+        </Link>
         <div className="w-full flex justify-center gap-16">
           <button className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#21838e] cursor-pointer">
             <img

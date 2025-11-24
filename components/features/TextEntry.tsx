@@ -6,6 +6,7 @@ import { ComponentProps } from "@/types/template";
 type ExtendedProps = ComponentProps & {
   value?: string | number; // APIから来る値
   disabled?: boolean; // 編集不可フラグ
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 export default function TextEntry({
@@ -16,6 +17,7 @@ export default function TextEntry({
   // ★これらを受け取る
   value,
   disabled,
+  onChange,
 }: ExtendedProps) {
   return (
     <div className="flex flex-col w-[640px] text-black rounded-[8px] gap-[8px] p-[16px] focus:ring-2">
@@ -33,7 +35,7 @@ export default function TextEntry({
         // ★編集不可にする
         disabled={disabled}
         readOnly={disabled}
-        onChange={() => {}} // Reactのwarning防止のためのダミー関数
+        onChange={onChange}
       ></input>
     </div>
   );
