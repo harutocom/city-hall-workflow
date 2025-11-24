@@ -7,7 +7,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
-import Button from "@/componets/ui/Button";
+import Button from "@/components/ui/Button";
 
 export default function Login() {
   // email, password, errorの状態管理
