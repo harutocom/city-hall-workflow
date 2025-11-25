@@ -1,5 +1,8 @@
+"use client";
+
 import React from "react";
 import Link from "next/link";
+import { signOut } from "next-auth/react";
 
 const Header = () => {
   return (
@@ -30,13 +33,13 @@ const Header = () => {
         <p className="text-white">個人設定</p>
       </Link>
 
-      <Link
-        href="/login"
+      <button
+        onClick={() => signOut({ callbackUrl: "/login" })}
         className="absolute right-8 top-5 flex items-center gap-2 cursor-pointer"
       >
         <img src="/Lock.png" alt="logout" className="w-4 h-4" />
         <p className="text-white">ログアウト</p>
-      </Link>
+      </button>
     </header>
   );
 };
