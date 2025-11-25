@@ -15,7 +15,7 @@ const Header = () => {
       </Link>
 
       <Link
-        href="/history"
+        href="/home/application"
         className="absolute right-72 top-5 flex items-center gap-2 cursor-pointer"
       >
         <img src="/History.png" alt="history" className="w-4 h-4" />
@@ -23,7 +23,7 @@ const Header = () => {
       </Link>
 
       <Link
-        href="/setting"
+        href="/settings"
         className="absolute right-40 top-5 flex items-center gap-2 cursor-pointer"
       >
         <img src="/Setting.png" alt="setting" className="w-4 h-4" />

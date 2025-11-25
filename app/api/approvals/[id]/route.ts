@@ -116,49 +116,109 @@ export async function PATCH(
       .parse(body);
 
     // トランザクション処理開始
-    const result = await db.$transaction(async (tx) => {
-      // まず対象の承認タスクを取得
-      const currentFlow = await tx.approval_flows.findUnique({
-        where: { id: approvalFlowId },
-      });
+    const result = await db.$transaction(
+      async (tx) => {
+        // まず対象の承認タスクを取得
+        const currentFlow = await tx.approval_flows.findUnique({
+          where: { id: approvalFlowId },
+        });
 
-      // 権限チェック & ステータスチェック
-      if (!currentFlow || currentFlow.approver_id !== userId) {
-        throw new Error("FORBIDDEN"); // 自分のじゃない
+        // 権限チェック & ステータスチェック
+        if (!currentFlow || currentFlow.approver_id !== userId) {
+          throw new Error("FORBIDDEN"); // 自分のじゃない
+        }
+        if (currentFlow.action !== "pending") {
+          throw new Error("ALREADY_PROCESSED"); // 既に承認/差戻し済み
+        }
+
+        // 承認フローのステータス更新
+        const updatedFlow = await tx.approval_flows.update({
+          where: { id: approvalFlowId },
+          data: {
+            action: action, // "approve" or "remand"
+            comment: comment,
+            acted_at: new Date(),
+          },
+        });
+
+        // 申請本体 (Applications) のステータス更新
+        let newAppStatus = "";
+        if (action === "remand") {
+          newAppStatus = "draft"; // 差し戻し -> 下書きに戻す(再編集可能に)
+        } else {
+          newAppStatus = "approved"; // 承認 -> 承認済みにする
+        }
+
+        await tx.applications.update({
+          where: { id: currentFlow.application_id },
+          data: {
+            status: newAppStatus,
+            // 承認なら完了日時を入れる
+            completed_at: action === "approve" ? new Date() : null,
+          },
+        });
+
+        // =================================================
+        // ★追加機能: 「休暇願」承認時、期間から時間を計算して自動減算
+        // =================================================
+
+        // 1. 判断材料（テンプレート名・入力値）を取得
+        const appData = await tx.applications.findUnique({
+          where: { id: currentFlow.application_id },
+          include: {
+            application_templates: true,
+            application_values: true,
+          },
+        });
+
+        // 2. 条件: 「承認」かつ「テンプレート名に'休暇'が含まれる」
+        if (
+          action === "approve" &&
+          appData?.application_templates.name.includes("休暇")
+        ) {
+          // 3. 期間入力(DateRange)の値を探す ("~" が含まれていれば期間とみなす)
+          const rangeValue = appData.application_values.find(
+            (v) => v.value_text && v.value_text.includes("~")
+          );
+
+          if (rangeValue && rangeValue.value_text) {
+            // 文字列 "2025-01-01~2025-01-03" を分割
+            const [startStr, endStr] = rangeValue.value_text.split("~");
+
+            if (startStr && endStr) {
+              const startDate = new Date(startStr);
+              const endDate = new Date(endStr);
+
+              // 日数計算: (差分ミリ秒 / 1日のミリ秒) + 1日(当日分)
+              const diffTime = Math.abs(
+                endDate.getTime() - startDate.getTime()
+              );
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+              // 時間計算: 日数 × 7.75時間 (一旦定時で計算)
+              const hoursPerDay = 7.75;
+              const hoursToDeduct = diffDays * hoursPerDay;
+
+              // 4. 減算実行
+              await tx.users.update({
+                where: { id: appData.applicant_id },
+                data: {
+                  remaining_leave_hours: { decrement: hoursToDeduct },
+                },
+              });
+            }
+          }
+        }
+        // =================================================
+
+        return updatedFlow;
+      },
+      {
+        // ★このオプションを追加！
+        maxWait: 5000, // トランザクション開始待ち (5秒)
+        timeout: 10000, // 実行時間リミット (10秒に延長)
       }
-      if (currentFlow.action !== "pending") {
-        throw new Error("ALREADY_PROCESSED"); // 既に承認/差戻し済み
-      }
-
-      // 承認フローのステータス更新
-      const updatedFlow = await tx.approval_flows.update({
-        where: { id: approvalFlowId },
-        data: {
-          action: action, // "approve" or "remand"
-          comment: comment,
-          acted_at: new Date(),
-        },
-      });
-
-      // 申請本体 (Applications) のステータス更新
-      let newAppStatus = "";
-      if (action === "remand") {
-        newAppStatus = "draft"; // 差し戻し -> 下書きに戻す(再編集可能に)
-      } else {
-        newAppStatus = "approved"; // 承認 -> 承認済みにする
-      }
-
-      await tx.applications.update({
-        where: { id: currentFlow.application_id },
-        data: {
-          status: newAppStatus,
-          // 承認なら完了日時を入れる
-          completed_at: action === "approve" ? new Date() : null,
-        },
-      });
-
-      return updatedFlow;
-    });
+    );
 
     return NextResponse.json(result);
   } catch (error) {

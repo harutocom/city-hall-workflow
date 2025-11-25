@@ -6,13 +6,16 @@ export default function Home() {
     <div className="min-h-screen w-full bg-[#F4F6F8]">
       <div className="flex flex-col px-38 pt-48 pb-16 gap-12">
         <Link
-          href="/home/application"
+          href="/home/application/new"
           className="h-28 bg-[#1F6C7E] flex justify-center items-center text-white text-4xl font-bold rounded-[16px] shadow-md shadow-black/60 hover:bg-[#21838e] cursor-pointer"
         >
           <p>申請する</p>
         </Link>
         <div className="w-full flex justify-center gap-16">
-          <button className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#21838e] cursor-pointer">
+          <Link
+            href="home/application/pending"
+            className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#21838e] cursor-pointer"
+          >
             <img
               src="/Search.png"
               alt="Search"
@@ -23,19 +26,22 @@ export default function Home() {
               <span className="text-7xl leading-none">2</span>
               <span className="text-3xl ml-1 leading-none">件</span>
             </p>
-          </button>
-          <button className="w-140 h-48 bg-[#CB223F] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#e04861] cursor-pointer">
+          </Link>
+          <Link
+            href="home/approvals"
+            className="w-140 h-48 bg-[#CB223F] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#e04861] cursor-pointer"
+          >
             <img
               src="/Read.png"
               alt="Read"
               className="absolute top-4 right-4"
             />
-            <p className="absolute top-4 left-4">申請待ち</p>
+            <p className="absolute top-4 left-4">承認待ち</p>
             <p className="absolute bottom-8 left-8 flex items-end">
               <span className="text-7xl leading-none">2</span>
               <span className="text-3xl ml-1 leading-none">件</span>
             </p>
-          </button>
+          </Link>
           <button className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold  rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#21838e] cursor-pointer">
             <img
               src="/TimeLimit.png"

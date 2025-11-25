@@ -1,4 +1,4 @@
-// app/(app)/home/application
+// app/(app)/home/application/draft
 "use client";
 
 import { useEffect, useState } from "react";
@@ -22,7 +22,7 @@ export default function MyApplicationsPage() {
   useEffect(() => {
     const fetchApps = async () => {
       try {
-        const res = await fetch("/api/applications");
+        const res = await fetch("/api/applications?status=draft");
         if (res.ok) {
           const data = await res.json();
           setApps(data);
@@ -84,7 +84,7 @@ export default function MyApplicationsPage() {
             className="text-2xl font-bold pb-1 inline-block"
             style={{ borderBottom: `4px solid ${THEME_COLOR}` }}
           >
-            申請履歴一覧
+            申請中一覧
           </h1>
 
           {/* 新規作成ボタン */}

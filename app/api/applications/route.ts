@@ -4,7 +4,70 @@ import { getToken } from "next-auth/jwt";
 import { db } from "@/lib/db";
 import { z } from "zod";
 import { ApplicationCreateSchema } from "@/schemas/application";
+import { Prisma } from "@prisma/client";
 
+export async function GET(request: NextRequest) {
+  try {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+    if (!token)
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    const parsedToken = z
+      .object({ id: z.coerce.number().int() })
+      .safeParse(token);
+    if (!parsedToken.success)
+      return NextResponse.json({ message: "Invalid token" }, { status: 400 });
+    const userId = parsedToken.data.id;
+
+    // ★ここから改良：クエリパラメータの取得
+    const searchParams = request.nextUrl.searchParams;
+    const statusParam = searchParams.get("status"); // "draft" や "pending" が入る
+
+    // ★検索条件の組み立て
+    // 基本条件: 自分の申請であること
+    const whereCondition: Prisma.applicationsWhereInput = {
+      applicant_id: userId,
+    };
+
+    // statusパラメータがある場合のみ、条件に追加する
+    // (パラメータがない場合は全件取得になる)
+    if (statusParam) {
+      whereCondition.status = statusParam;
+    }
+
+    // 自分の申請一覧を取得
+    const myApplications = await db.applications.findMany({
+      where: whereCondition, // ★動的な条件を適用
+      include: {
+        application_templates: {
+          select: { name: true }, // テンプレート名
+        },
+        approval_flows: {
+          select: {
+            approver_id: true,
+            action: true,
+            users: { select: { name: true } }, // 承認者名
+          },
+          orderBy: { id: "asc" }, // 承認順
+        },
+      },
+      orderBy: {
+        created_at: "desc", // 新しい順
+      },
+    });
+
+    return NextResponse.json(myApplications);
+  } catch (error) {
+    console.error("My Applications Error:", error);
+    return NextResponse.json(
+      { message: "申請履歴の取得に失敗しました。" },
+      { status: 500 }
+    );
+  }
+}
 export async function POST(request: NextRequest) {
   try {
     const token = await getToken({
