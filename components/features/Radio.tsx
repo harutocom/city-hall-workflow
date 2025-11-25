@@ -2,26 +2,23 @@
 
 import { ComponentProps } from "@/types/template";
 
-// ★詳細画面用のPropsを追加
 type ExtendedProps = ComponentProps & {
   value?: string | number | boolean;
   disabled?: boolean;
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
 export default function Radio({
   label,
-  placeholder, // Radioではあまり使わないが型定義にあるので維持
   isRequired,
   options,
-  // ★これらを受け取る
   value,
   disabled,
+  onChange,
 }: ExtendedProps) {
-  // ★チェック判定ロジック
-  // DBの値(value)と、選択肢の値(optionValue)が一致しているか判定
+  // 値が一致しているか判定する関数
   const isOptionChecked = (optionValue: string) => {
     if (value === undefined || value === null) return false;
-    // 文字列にして比較することで、true(boolean) と "true"(string) の違いを吸収
     return String(value) === String(optionValue);
   };
 
@@ -43,14 +40,12 @@ export default function Radio({
             >
               <input
                 type="radio"
-                name={label} // グループ化のためにnameは必須
+                name={label}
                 value={option.value}
-                // ★詳細画面用の制御
                 disabled={disabled}
-                // 詳細画面なら、値が一致するものにチェックを入れる
-                // 入力画面なら、Reactの制御外(undefined)にしてユーザー操作に任せる
-                checked={disabled ? isOptionChecked(option.value) : undefined}
-                // ★スタイル調整
+                // 入力時も表示時も、値が一致していればチェックを入れる
+                checked={isOptionChecked(option.value)}
+                onChange={onChange}
                 className="h-4 w-4 border-gray-300 text-blue-600 focus:ring-blue-500 disabled:bg-gray-100"
               />
               <span className="text-sm">{option.label}</span>
