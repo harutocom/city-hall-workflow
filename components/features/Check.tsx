@@ -5,6 +5,7 @@ import { ComponentProps } from "@/types/template";
 type ExtendedProps = ComponentProps & {
   value?: string | number | boolean;
   disabled?: boolean;
+  checked?: boolean;
   onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
 };
 
