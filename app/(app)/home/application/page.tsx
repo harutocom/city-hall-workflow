@@ -1,123 +1,192 @@
 // app/(app)/home/application
 "use client";
 
-import { useState, useEffect } from "react";
-import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/NewButton";
 
-// --- APIから返ってくるデータの型定義 ---
-// APIのselect句に合わせて型を定義します
-interface Template {
+// 型定義
+type Application = {
   id: number;
-  name: string;
-  updated_at: string;
-  description: string | null;
-  users: {
-    name: string | null;
-  };
-}
-
-/**
- * 日付文字列を 'YYYY/MM/DD HH:mm' 形式にフォーマットするヘルパー関数
- * @param dateString ISO形式の日付文字列
- */
-const formatDate = (dateString: string) => {
-  const date = new Date(dateString);
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  return `${year}/${month}/${day} ${hours}:${minutes}`;
+  status: string;
+  created_at: string;
+  updated_at: string; // ★追加
+  application_templates: { name: string };
 };
 
-export default function TemplateListPage() {
-  const router = useRouter();
+export default function MyApplicationsPage() {
+  const [apps, setApps] = useState<Application[]>([]);
+  const [loading, setLoading] = useState(true);
+  const THEME_COLOR = "#1F6C7E";
 
-  // --- 状態管理 ---
-  const [templates, setTemplates] = useState<Template[]>([]); // テンプレートのリスト
-  const [isLoading, setIsLoading] = useState<boolean>(true); // ローディング状態
-  const [error, setError] = useState<string | null>(null); // エラーメッセージ
-
-  // --- データ取得ロジック ---
   useEffect(() => {
-    // ページが読み込まれた時にAPIからデータを取得する
-    const fetchTemplates = async () => {
+    const fetchApps = async () => {
       try {
-        setIsLoading(true);
-        setError(null);
-
-        const response = await fetch("/api/templates");
-        if (!response.ok) {
-          throw new Error("データの取得に失敗しました。");
+        const res = await fetch("/api/applications");
+        if (res.ok) {
+          const data = await res.json();
+          setApps(data);
         }
-
-        const data = await response.json();
-        setTemplates(data.templates);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err.message : "不明なエラーが発生しました。"
-        );
+      } catch (e) {
+        console.error(e);
       } finally {
-        setIsLoading(false);
+        setLoading(false);
       }
     };
+    fetchApps();
+  }, []);
 
-    fetchTemplates();
-  }, []); // 空の配列を渡すことで、コンポーネントのマウント時に一度だけ実行される
+  // 日付フォーマット関数
+  const formatDate = (dateString: string) => {
+    return new Date(dateString).toLocaleString("ja-JP", {
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
 
-  // --- レンダリング ---
+  // ステータスのバッジ表示
+  const renderStatus = (status: string) => {
+    const styles = {
+      approved: "bg-green-100 text-green-800",
+      remanded: "bg-red-100 text-red-800",
+      pending: "bg-yellow-100 text-yellow-800",
+      draft: "bg-gray-100 text-gray-800",
+    };
+    const labels = {
+      approved: "承認済み",
+      remanded: "差し戻し",
+      pending: "承認待ち",
+      draft: "下書き",
+    };
+    const s = status as keyof typeof styles;
+    return (
+      <span
+        className={`px-3 py-1 rounded-full text-xs font-bold ${
+          styles[s] || styles.draft
+        }`}
+      >
+        {labels[s] || status}
+      </span>
+    );
+  };
 
-  // ローディング中の表示
-  if (isLoading) {
-    return <div className="p-8 text-center">読み込み中...</div>;
-  }
-
-  // エラー発生時の表示
-  if (error) {
-    return <div className="p-8 text-center text-red-500">エラー: {error}</div>;
-  }
+  if (loading) return <div className="p-10 text-center">読み込み中...</div>;
 
   return (
-    <div className="p-8 max-w-5xl mx-auto">
-      <header className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold border-l-4 border-[#008080] pl-4">
-          テンプレート一覧
-        </h1>
-      </header>
+    <div className="min-h-screen bg-[#F4F6F8]">
+      <div className="max-w-6xl mx-auto px-4 py-10">
+        {/* ヘッダーエリア */}
+        <div className="flex justify-between items-end mb-8">
+          <h1
+            className="text-2xl font-bold pb-1 inline-block"
+            style={{ borderBottom: `4px solid ${THEME_COLOR}` }}
+          >
+            申請履歴一覧
+          </h1>
 
-      {/* テンプレート一覧テーブル */}
-      <div className="shadow-lg rounded-lg overflow-hidden">
-        <table className="min-w-full bg-white">
-          <thead className="bg-[#008080] text-white">
-            <tr>
-              <th className="py-3 px-6 text-left">テンプレート名</th>
-              <th className="py-3 px-6 text-left">作成者名</th>
-              <th className="py-3 px-6 text-left">最終編集日時</th>
-              <th className="py-3 px-6 text-left">説明</th>
-            </tr>
-          </thead>
-          <tbody className="text-gray-700">
-            {templates.map((template) => (
+          {/* 新規作成ボタン */}
+          <Link href="/home/application/new">
+            <Button
+              variant="default"
+              className="bg-[#1F6C7E] hover:bg-[#165a6a] px-6"
+            >
+              ＋ 新規申請
+            </Button>
+          </Link>
+        </div>
+
+        {/* 一覧テーブル */}
+        <div className="w-full overflow-x-auto bg-white shadow rounded-lg border border-gray-200">
+          <table
+            className="w-full border-collapse"
+            style={{ border: `1px solid ${THEME_COLOR}` }}
+          >
+            <thead>
               <tr
-                key={template.id}
-                className="border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
-                onClick={() =>
-                  router.push(`/home/application/new/${template.id}`)
-                } // あとで詳細ページへの遷移を追加
+                className="text-white"
+                style={{ backgroundColor: THEME_COLOR }}
               >
-                <td className="py-4 px-6 font-medium">{template.name}</td>
-                <td className="py-4 px-6">{template.users?.name || "N/A"}</td>
-                <td className="py-4 px-6">{formatDate(template.updated_at)}</td>
-                <td className="py-4 px-6 text-sm">{template.description}</td>
+                <th className="p-3 font-bold border-r border-white text-center">
+                  ID
+                </th>
+                <th className="p-3 font-bold border-r border-white text-center w-1/4">
+                  テンプレート名
+                </th>
+                <th className="p-3 font-bold border-r border-white text-center">
+                  作成日時
+                </th>
+                <th className="p-3 font-bold border-r border-white text-center">
+                  最終更新日時
+                </th>
+                <th className="p-3 font-bold border-r border-white text-center">
+                  ステータス
+                </th>
+                <th className="p-3 font-bold w-24 text-center">詳細</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-        {templates.length === 0 && (
-          <div className="p-8 text-center text-gray-500">
-            テンプレートがまだ作成されていません。
-          </div>
-        )}
+            </thead>
+            <tbody className="text-gray-700">
+              {apps.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="p-10 text-center text-gray-500">
+                    申請履歴はありません。
+                  </td>
+                </tr>
+              ) : (
+                apps.map((app) => (
+                  <tr
+                    key={app.id}
+                    className="hover:bg-gray-50 transition-colors text-center"
+                    style={{ borderBottom: `1px solid ${THEME_COLOR}` }}
+                  >
+                    <td
+                      className="p-3"
+                      style={{ borderRight: `1px solid ${THEME_COLOR}` }}
+                    >
+                      {app.id}
+                    </td>
+                    <td
+                      className="p-3 font-medium"
+                      style={{ borderRight: `1px solid ${THEME_COLOR}` }}
+                    >
+                      {app.application_templates.name}
+                    </td>
+                    <td
+                      className="p-3"
+                      style={{ borderRight: `1px solid ${THEME_COLOR}` }}
+                    >
+                      {formatDate(app.created_at)}
+                    </td>
+                    <td
+                      className="p-3"
+                      style={{ borderRight: `1px solid ${THEME_COLOR}` }}
+                    >
+                      {formatDate(app.updated_at)}
+                    </td>
+                    <td
+                      className="p-3"
+                      style={{ borderRight: `1px solid ${THEME_COLOR}` }}
+                    >
+                      {renderStatus(app.status)}
+                    </td>
+                    <td className="p-3">
+                      {/* 詳細ページへのリンク (承認詳細ページを流用する場合はパス注意) */}
+                      {/* 今回は自分の申請詳細APIを作っていないので、一旦仮リンクか、承認詳細と同じ画面へ */}
+                      <Link
+                        href={`/home/application/${app.id}`}
+                        className="text-blue-500 hover:underline font-bold"
+                      >
+                        詳細
+                      </Link>
+                    </td>
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       </div>
     </div>
   );

@@ -5,6 +5,55 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 import { ApplicationCreateSchema } from "@/schemas/application";
 
+export async function GET(request: NextRequest) {
+  try {
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+    if (!token)
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+
+    const parsedToken = z
+      .object({ id: z.coerce.number().int() })
+      .safeParse(token);
+    if (!parsedToken.success)
+      return NextResponse.json({ message: "Invalid token" }, { status: 400 });
+    const userId = parsedToken.data.id;
+
+    // 自分の申請一覧を取得
+    const myApplications = await db.applications.findMany({
+      where: {
+        applicant_id: userId, // 自分のものだけ
+      },
+      include: {
+        application_templates: {
+          select: { name: true }, // テンプレート名
+        },
+        approval_flows: {
+          select: {
+            approver_id: true,
+            action: true,
+            users: { select: { name: true } }, // 承認者名
+          },
+          orderBy: { id: "asc" }, // 承認順
+        },
+      },
+      orderBy: {
+        created_at: "desc", // 新しい順
+      },
+    });
+
+    return NextResponse.json(myApplications);
+  } catch (error) {
+    console.error("My Applications Error:", error);
+    return NextResponse.json(
+      { message: "申請履歴の取得に失敗しました。" },
+      { status: 500 }
+    );
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const token = await getToken({
