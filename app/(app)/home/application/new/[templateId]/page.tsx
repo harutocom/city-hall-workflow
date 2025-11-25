@@ -77,7 +77,7 @@ export default function ApplicationPage() {
       }
 
       alert("申請が完了しました！");
-      router.push("/home/approvals"); // 承認一覧へ戻る (または自分の履歴へ)
+      router.push("/home/application/pending"); // 承認一覧へ戻る (または自分の履歴へ)
     } catch (error: any) {
       console.error(error);
       alert(`エラー: ${error.message}`);
