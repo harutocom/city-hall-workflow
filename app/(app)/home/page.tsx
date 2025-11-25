@@ -88,7 +88,7 @@ export default function Home() {
 
           {/* 承認待ち (件数) */}
           <Link
-            href="/approvals" // ★承認一覧ページへ飛ばす
+            href="/home/approvals" // ★承認一覧ページへ飛ばす
             className="w-140 h-48 bg-[#CB223F] text-white text-2xl font-bold rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#e04861] cursor-pointer"
           >
             <img
