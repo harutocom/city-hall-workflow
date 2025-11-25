@@ -15,22 +15,26 @@ export default function Home() {
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        // 1. 残余時間
-        const resTime = await fetch("/api/me/remaining-leave");
+        // 3つのAPIを並列で処理する
+        const [resTime, resApps, resApprovals] = await Promise.all([
+          fetch("/api/me/remaining-leave"),
+          fetch("/api/applications?status=pending"),
+          fetch("/api/approvals"),
+        ]);
+
+        // 1. 残余時間の処理
         if (resTime.ok) {
           const data = await resTime.json();
           setRemainingTime(Number(data.remaining_leave_hours));
         }
 
         // 2. 自分の申請中件数
-        const resApps = await fetch("/api/applications?status=pending");
         if (resApps.ok) {
           const data = await resApps.json();
           setPendingAppsCount(data.length);
         }
 
         // 3. 自分への承認待ち件数
-        const resApprovals = await fetch("/api/approvals");
         if (resApprovals.ok) {
           const data = await resApprovals.json();
           setWaitingApprovalsCount(data.length);
@@ -43,7 +47,6 @@ export default function Home() {
     };
     fetchDashboardData();
   }, []);
-
   if (loading) {
     return (
       <div className="min-h-screen w-full bg-[#F4F6F8] pt-48 text-center">
