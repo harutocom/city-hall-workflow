@@ -65,6 +65,9 @@ export default function ApplicationDetailViewer({
       className: "bg-gray-50 cursor-not-allowed", // スタイル調整（任意）
     };
 
+    // ★安全な文字列変換ヘルパー
+    // (null/undefinedなら空文字、それ以外は文字列化)
+    const safeValue = String(commonProps.value ?? "");
     switch (component.component_name) {
       case "text":
         return (
@@ -72,25 +75,36 @@ export default function ApplicationDetailViewer({
             {...commonProps}
             // ★ここで上書き！
             // null や undefined なら空文字に、true/false なら "true"/"false" という文字列に変換
-            value={String(commonProps.value ?? "")}
+            value={safeValue}
           />
         );
       case "textarea":
-        return <TextArea {...commonProps} />;
+        return (
+          <TextArea
+            {...commonProps} // ★ここで値を強制的に文字列化して上書き
+            value={safeValue}
+          />
+        );
       case "select":
         // Selectの場合、valueに選択肢の値を渡せば自動で選択状態になるはず
-        return <Select {...commonProps} />;
+        return <Select {...commonProps} value={safeValue} />;
       case "radio":
         // Radioの場合、checked判定が必要かもしれないが、valueを渡して制御できればベスト
         return <Radio {...commonProps} />;
       case "checkbox":
         // Checkboxの場合、booleanなら checked プロパティに変換が必要かも
-        return <Check {...commonProps} checked={displayValue === true} />;
+        return (
+          <Check
+            {...commonProps}
+            checked={String(displayValue) === "true"}
+            value={safeValue}
+          />
+        );
       case "date":
         // 日付文字列を渡す
-        return <DateInput {...commonProps} />;
+        return <DateInput {...commonProps} value={safeValue} />;
       case "date_range":
-        return <DateRange {...commonProps} />;
+        return <DateRange {...commonProps} value={safeValue} />;
       default:
         return <div className="text-gray-400">-</div>;
     }
