@@ -3,7 +3,6 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
-// ★インポート追加
 import RemainingTime from "@/components/features/RemainingTime";
 
 export default function Home() {
@@ -22,19 +21,19 @@ export default function Home() {
           fetch("/api/approvals"),
         ]);
 
-        // 1. 残余時間の処理
+        // 残余時間の処理
         if (resTime.ok) {
           const data = await resTime.json();
           setRemainingTime(Number(data.remaining_leave_hours));
         }
 
-        // 2. 自分の申請中件数
+        // 自分の申請中件数
         if (resApps.ok) {
           const data = await resApps.json();
           setPendingAppsCount(data.length);
         }
 
-        // 3. 自分への承認待ち件数
+        // 自分への承認待ち件数
         if (resApprovals.ok) {
           const data = await resApprovals.json();
           setWaitingApprovalsCount(data.length);
@@ -57,7 +56,7 @@ export default function Home() {
 
   return (
     <div className="min-h-screen w-full bg-[#F4F6F8]">
-      <div className="flex flex-col px-38 pt-48 pb-16 gap-12">
+      <div className="flex flex-col px-38 pt-24 pb-16 gap-12">
         {/* 申請ボタン */}
         <Link
           href="/home/application/new"
@@ -88,7 +87,7 @@ export default function Home() {
 
           {/* 承認待ち (件数) */}
           <Link
-            href="/approvals" // ★承認一覧ページへ飛ばす
+            href="/home/approvals" // ★承認一覧ページへ飛ばす
             className="w-140 h-48 bg-[#CB223F] text-white text-2xl font-bold rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#e04861] cursor-pointer"
           >
             <img

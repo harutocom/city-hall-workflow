@@ -3,6 +3,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
+import toast from "react-hot-toast";
 
 // ★ファイル名を修正したもの
 import RemainingTime from "@/components/features/RemainingTime";
@@ -50,6 +51,7 @@ export default function ApplicationPage() {
   const handleSubmit = async () => {
     if (!confirm("申請を送信しますか？")) return;
     setSubmitting(true);
+    const loadingToastId = toast.loading("送信しています...");
 
     try {
       // API形式に変換
@@ -76,11 +78,16 @@ export default function ApplicationPage() {
         throw new Error(err.message || "申請に失敗しました");
       }
 
-      alert("申請が完了しました！");
+      // ★成功通知
+      toast.dismiss(loadingToastId);
+      toast.success("申請が完了しました！");
+
       router.push("/home/application/pending"); // 承認一覧へ戻る (または自分の履歴へ)
     } catch (error: any) {
       console.error(error);
-      alert(`エラー: ${error.message}`);
+      // ★エラー通知
+      toast.dismiss(loadingToastId);
+      toast.error(`エラー: ${error.message}`);
     } finally {
       setSubmitting(false);
     }

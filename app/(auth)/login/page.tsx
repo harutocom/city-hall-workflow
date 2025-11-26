@@ -7,33 +7,51 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { signIn } from "next-auth/react";
 import Image from "next/image";
-import Button from "@/components/ui/Button";
+import { Button } from "@/components/ui/NewButton";
+import toast from "react-hot-toast";
 
 export default function Login() {
   // email, password, errorの状態管理
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null); // エラーメッセージリセット
+    setIsLoading(true);
 
-    // signIn関数で認証
-    const result = await signIn("credentials", {
-      redirect: false,
-      email,
-      password,
-    });
+    // ★トーストで「処理中」を表示
+    const loadingToastId = toast.loading("ログイン中...");
 
-    // 失敗した場合、エラーメッセージを表示
-    if (result?.error) {
-      // route.ts で throw したメッセージが入る
-      setError(result.error);
-    } else {
-      // ログイン成功時はhomeへ遷移
-      router.push("/home");
+    try {
+      // signIn関数で認証
+      const result = await signIn("credentials", {
+        redirect: false,
+        email,
+        password,
+      });
+
+      toast.dismiss(loadingToastId); // ローディングを消す
+
+      // 失敗した場合、エラーメッセージを表示
+      if (result?.error) {
+        // route.ts で throw したメッセージが入る
+        setError(result.error);
+        toast.error("メールアドレスまたはパスワードが間違っています");
+        setIsLoading(false);
+      } else {
+        toast.success("ログインしました！");
+        // ログイン成功時はhomeへ遷移
+        router.push("/home");
+        // 遷移するまでローディング中にしておく(連打防止)
+      }
+    } catch (error) {
+      toast.dismiss(loadingToastId);
+      toast.error("システムエラーが発生しました");
+      setIsLoading(false);
     }
   };
   return (
@@ -54,6 +72,7 @@ export default function Login() {
               className="h-[56px] w-[462px] bg-[#D9D9D9] pl-[32px] rounded-[8px]"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              disabled={isLoading} // 処理中は入力不可に
             ></input>
           </div>
           <div className="flex gap-[16px]">
@@ -69,10 +88,17 @@ export default function Login() {
               className="h-[56px] w-[462px] bg-[#D9D9D9] pl-[32px] rounded-[8px]"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
+              disabled={isLoading} // 処理中は入力不可に
             ></input>
           </div>
           {error && <p className="text-red-500">{error}</p>}
-          <Button placeholder="ログイン" type="submit"></Button>
+          <Button
+            variant="default"
+            className="bg-[#CB223F] h-[56px] w-[368px] text-white rounded-[8px]"
+            disabled={isLoading}
+          >
+            {isLoading ? "処理中..." : "ログイン"}
+          </Button>
         </form>
       </div>
       <h1></h1>

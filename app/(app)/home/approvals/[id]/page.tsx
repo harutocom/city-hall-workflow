@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-// 作成したコンポーネントをインポート
 import ApplicationDetailViewer from "@/components/features/applications/ApplicationDetailViewer";
 import { FormComponent } from "@/types/template";
+import toast from "react-hot-toast";
 
 // 型定義 (APIのレスポンスに合わせる)
 type ApprovalDetail = {
@@ -66,6 +66,8 @@ export default function ApprovalDetailPage() {
       return;
 
     setProcessing(true);
+    // ★ローディング開始
+    const loadingToastId = toast.loading("処理中...");
     try {
       const res = await fetch(`/api/approvals/${id}`, {
         method: "PATCH",
@@ -80,11 +82,18 @@ export default function ApprovalDetailPage() {
 
       if (!res.ok) throw new Error("処理失敗");
 
-      alert(action === "approve" ? "承認が完了しました！" : "差し戻しました。");
+      // ★成功通知 (loadingを消してsuccessを表示)
+      toast.dismiss(loadingToastId);
+      toast.success(
+        action === "approve" ? "承認が完了しました！" : "差し戻しました。"
+      );
+
       router.push("/home/approvals");
     } catch (error) {
       console.error(error);
-      alert("エラーが発生しました。");
+      // ★エラー通知
+      toast.dismiss(loadingToastId);
+      toast.error("エラーが発生しました。");
     } finally {
       setProcessing(false);
     }
