@@ -69,7 +69,7 @@ export default function Home() {
         <div className="w-full flex justify-center gap-16">
           {/* 申請中 (件数) */}
           <Link
-            href="/home/application" // ★一覧ページへ飛ばす
+            href="/home/application/pending"
             className="w-140 h-48 bg-[#1F6C7E] text-white text-2xl font-bold rounded-[16px] shadow-md shadow-black/60 relative hover:bg-[#21838e] cursor-pointer"
           >
             <img
