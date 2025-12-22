@@ -4,12 +4,20 @@ import { getToken } from "next-auth/jwt";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
+/**
+ * 選択した申請の詳細を取得するAPI
+ * * @auth 必須
+ * @method GET
+ * @param request NextRequest
+ * @param param1 context.params.id 申請ID
+ * @returns {Promise<NextResponse>} 申請詳細データのJSON
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // 1. トークン検証 (いつもの)
+    // 1. トークン取得し認証
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
@@ -24,24 +32,23 @@ export async function GET(
       return NextResponse.json({ message: "Invalid token" }, { status: 400 });
     const userId = parsedToken.data.id;
 
-    // 2. ID取得
+    // 2. パラメータから申請ID取得
     const { id } = await params;
     const applicationId = parseInt(id);
     if (isNaN(applicationId))
       return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
 
     // 3. 申請詳細の取得
-    // ★ここが変更点: approval_flows ではなく applications テーブルを直接見る
     const application = await db.applications.findUnique({
       where: {
         id: applicationId,
       },
       include: {
-        // 申請者の情報 (自分だけど表示用に取得)
+        // 申請者の情報 (表示用に取得)
         users: {
           select: { name: true, department_id: true },
         },
-        // テンプレートと項目定義
+        // テンプレートの詳細を取得
         application_templates: {
           include: {
             template_elements: {
@@ -56,8 +63,7 @@ export async function GET(
       },
     });
 
-    // 4. 権限チェック
-    // ★ここが変更点: 「申請者本人 (applicant_id)」かどうかをチェック
+    // 4. 権限チェック(申請者本人の申請かチェック)
     if (!application || application.applicant_id !== userId) {
       return NextResponse.json(
         { message: "データが見つからないか、権限がありません。" },

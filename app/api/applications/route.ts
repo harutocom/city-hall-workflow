@@ -6,49 +6,58 @@ import { z } from "zod";
 import { ApplicationCreateSchema } from "@/schemas/application";
 import { Prisma } from "@prisma/client";
 
+/**
+ * ユーザーが申請した申請一覧を取得するAPI
+ * * @auth 必須
+ * @method GET
+ * @param request クエリパラメータ: ?draft or ?pending
+ * @returns {Promise<NextResponse>} 申請データのJSON配列
+ */
 export async function GET(request: NextRequest) {
   try {
+    // 1. トークンを取得し認証
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
-    if (!token)
+    if (!token) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
 
     const parsedToken = z
       .object({ id: z.coerce.number().int() })
       .safeParse(token);
-    if (!parsedToken.success)
+    if (!parsedToken.success) {
       return NextResponse.json({ message: "Invalid token" }, { status: 400 });
+    }
     const userId = parsedToken.data.id;
 
-    // ★ここから改良：クエリパラメータの取得
+    // 2. クエリパラメータの取得し表示する内容を決める
     const searchParams = request.nextUrl.searchParams;
     const statusParam = searchParams.get("status"); // "draft" や "pending" が入る
 
-    // ★検索条件の組み立て
-    // 基本条件: 自分の申請であること
+    // 3. statusによって取得内容を変える準備
+    // 変数を作成
     const whereCondition: Prisma.applicationsWhereInput = {
       applicant_id: userId,
     };
-
-    // statusパラメータがある場合のみ、条件に追加する
-    // (パラメータがない場合は全件取得になる)
+    // statusを入れる
     if (statusParam) {
       whereCondition.status = statusParam;
     }
 
-    // 自分の申請一覧を取得
+    // 4. 自分の申請一覧を取得
     const myApplications = await db.applications.findMany({
-      where: whereCondition, // ★動的な条件を適用
+      where: whereCondition, // statusによって動的な条件を適用
       include: {
         application_templates: {
-          select: { name: true }, // テンプレート名
+          select: { name: true }, // 別のテーブルからテンプレート名も取得
         },
         approval_flows: {
+          // 別のapproval_flowsからもデータを取得
           select: {
-            approver_id: true,
-            action: true,
+            approver_id: true, // 承認者ID
+            action: true, // 承認者がこの申請に行ったアクション(pending or rejected or approved)
             users: { select: { name: true } }, // 承認者名
           },
           orderBy: { id: "asc" }, // 承認順
@@ -59,8 +68,10 @@ export async function GET(request: NextRequest) {
       },
     });
 
+    // 5. 結果を返す
     return NextResponse.json(myApplications);
   } catch (error) {
+    // エラー処理
     console.error("My Applications Error:", error);
     return NextResponse.json(
       { message: "申請履歴の取得に失敗しました。" },
@@ -68,15 +79,24 @@ export async function GET(request: NextRequest) {
     );
   }
 }
+
+/**
+ * 申請を作成するAPI
+ * * @auth 必須
+ * @method POST
+ * @param request
+ * @returns {Promise<NextResponse>} 作成した申請データの詳細情報のjson
+ */
 export async function POST(request: NextRequest) {
   try {
+    // 1. 認証
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
 
     if (!token) {
-      // tokenが無かったらエラーを返す
+      // トークンが無かったらエラーを返す
       return NextResponse.json({
         message: "ログインされていません。",
         status: 401,
@@ -100,12 +120,13 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // フロントからのデータを取得
+    // 2. フロントからのデータを取得
     const data = await request.json();
     const validatedData = ApplicationCreateSchema.parse(data);
     const { template_id, status, values, approvers } = validatedData;
     const applicant_id = parsedToken.data.id; // 申請者をtokenから取得
 
+    // 3. 申請データ作成
     // トランザクション処理開始
     const result = await db.$transaction(
       async (tx) => {
@@ -158,7 +179,7 @@ export async function POST(request: NextRequest) {
           };
         });
 
-        // 申請内容を保存
+        // 申請詳細を保存
         if (newApplicationValues.length > 0) {
           await tx.application_values.createMany({
             data: newApplicationValues,
@@ -170,10 +191,11 @@ export async function POST(request: NextRequest) {
           const flowData = approvers.map((approver) => ({
             application_id: newApplication.id,
             approver_id: approver.approver_id,
-            action: "pending", // まだ承認されていないので "pending" とする
+            action: "pending", // 未承認なので "pending"
             comment: null,
           }));
 
+          // 承認フローを作成
           await tx.approval_flows.createMany({
             data: flowData,
           });
@@ -181,8 +203,9 @@ export async function POST(request: NextRequest) {
         return newApplication;
       },
       {
-        maxWait: 5000, // 開始待ち: 2秒 -> 5秒に延長
-        timeout: 10000, // 実行時間: 5秒 -> 10秒に延長
+        // タイムアウトしないように待ち時間を編集
+        maxWait: 5000, // 開始待ち: 5秒
+        timeout: 10000, // 実行時間: 10秒
       }
     );
 
