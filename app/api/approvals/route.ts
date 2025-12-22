@@ -5,36 +5,35 @@ import { db } from "@/lib/db";
 import { z } from "zod";
 
 /**
- * 承認する申請一覧を取得するAPI
- * userIDがログイン中のユーザーかつステータスがpendingのものを取得
- * @param request
- * @returns 取得した申請一覧
+ * 承認する申請一覧を取得するAPI(status="pending"のものだけ)
+ * * @auth 必須 自分が承認者
+ * @method GET
+ * @param request NextRequest
+ * @returns {Promise<NextResponse>} 承認待ち申請のJSON配列
  */
 export async function GET(request: NextRequest) {
   try {
-    // トークンを取得
+    // 1. トークンを取得し認証
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
-    // トークンが無い場合エラー処理
     if (!token) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
 
-    // IDの取り出しと検証
+    // 2. トークンからuserIDを取得
     const parsedToken = z
       .object({
         id: z.coerce.number().int(),
       })
       .safeParse(token);
-    // IDが無かった場合のエラー処理
     if (!parsedToken.success) {
       return NextResponse.json({ message: "Invalid token" }, { status: 400 });
     }
     const userId = parsedToken.data.id;
 
-    // 承認待ちリストの取得
+    // 3. 承認待ちリストの取得
     const pendingApprovals = await db.approval_flows.findMany({
       where: {
         approver_id: userId, // 自分宛て

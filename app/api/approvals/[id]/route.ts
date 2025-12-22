@@ -4,12 +4,20 @@ import { getToken } from "next-auth/jwt";
 import { db } from "@/lib/db";
 import { z } from "zod";
 
+/**
+ * 承認する申請の詳細を取得するAPI
+ *  * @auth 必須 自分が承認者
+ * @method GET
+ * @param request NextRequest
+ * @param param1 context.params.id 選択された申請ID
+ * @returns {Promise<NextResponse>} 承認する申請詳細データのJSON
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // トークン情報の検証
+    // 1. トークンを取得し認証
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
@@ -17,15 +25,19 @@ export async function GET(
     if (!token) {
       return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
     }
+
+    // 2. パラメータからIDを取得
+    // トークンをバリデーション
     const parsedToken = z
       .object({ id: z.coerce.number().int() })
       .safeParse(token);
     if (!parsedToken.success) {
       return NextResponse.json({ message: "Invalid token" }, { status: 400 });
     }
+    // userID
     const userId = parsedToken.data.id;
 
-    // パラメータからid(approval_flowsのid)を取得
+    // 申請ID
     const { id } = await params;
     const approvalFlowId = parseInt(id);
     // idが無かった場合のエラー処理
@@ -33,7 +45,7 @@ export async function GET(
       return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
     }
 
-    // ID指定で1件取得 (自分が承認者のものに限る)
+    // 3. 申請詳細を取得
     const approval = await db.approval_flows.findUnique({
       where: {
         id: approvalFlowId,
@@ -79,12 +91,20 @@ export async function GET(
   }
 }
 
+/**
+ * 申請のステータスを変更するAPI(申請 or 差し戻し)
+ * * @auth 必須 自分が承認者
+ * @method PATCH
+ * @param request NextRequest
+ * @param param1 context.params.id 選択された申請ID
+ * @returns {Promise<NextResponse>} 承認 or 差し戻し後の申請詳細データのJSON
+ */
 export async function PATCH(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    // トークン情報の検証
+    // 1. トークンを取得し認証
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
@@ -97,14 +117,15 @@ export async function PATCH(
       .safeParse(token);
     if (!parsedToken.success)
       return NextResponse.json({ message: "Invalid token" }, { status: 400 });
-    const userId = parsedToken.data.id;
 
-    // IDとリクエストボディの取得
-    const { id } = await params;
+    // 2. トークンからIDの取得
+    const userId = parsedToken.data.id; // userID
+    const { id } = await params; // 選択された申請ID
     const approvalFlowId = parseInt(id);
     if (isNaN(approvalFlowId))
       return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
 
+    // 3. フロントから送られてきたデータを取得し検証
     const body = await request.json();
 
     // バリデーション: actionは "approve" か "remand" のみ許可
@@ -115,9 +136,12 @@ export async function PATCH(
       })
       .parse(body);
 
+    // 4. actionに応じて処理
     // トランザクション処理開始
     const result = await db.$transaction(
       async (tx) => {
+        // 4.1 statusを更新
+
         // まず対象の承認タスクを取得
         const currentFlow = await tx.approval_flows.findUnique({
           where: { id: approvalFlowId },
@@ -144,9 +168,9 @@ export async function PATCH(
         // 申請本体 (Applications) のステータス更新
         let newAppStatus = "";
         if (action === "remand") {
-          newAppStatus = "draft"; // 差し戻し -> 下書きに戻す(再編集可能に)
+          newAppStatus = "draft"; // 差し戻し：下書きに戻す(再編集可能に)
         } else {
-          newAppStatus = "approved"; // 承認 -> 承認済みにする
+          newAppStatus = "approved"; // 承認：承認済みにする
         }
 
         await tx.applications.update({
@@ -161,8 +185,8 @@ export async function PATCH(
         // =================================================
         // ★追加機能: 「休暇願」承認時、期間から時間を計算して自動減算
         // =================================================
-
-        // 1. 判断材料（テンプレート名・入力値）を取得
+        // 4.2 休暇願の承認時は期間から時間を計算し自動減産する
+        // 判断材料（テンプレート名・入力値）を取得
         const appData = await tx.applications.findUnique({
           where: { id: currentFlow.application_id },
           include: {
@@ -171,18 +195,18 @@ export async function PATCH(
           },
         });
 
-        // 2. 条件: 「承認」かつ「テンプレート名に'休暇'が含まれる」
+        // 条件: 「承認」かつ「テンプレート名に'休暇'が含まれる」
         if (
           action === "approve" &&
           appData?.application_templates.name.includes("休暇")
         ) {
-          // 3. 期間入力(DateRange)の値を探す ("~" が含まれていれば期間とみなす)
+          // 期間入力(DateRange)の値を探す ("~" が含まれていれば期間とみなす)
           const rangeValue = appData.application_values.find(
             (v) => v.value_text && v.value_text.includes("~")
           );
 
           if (rangeValue && rangeValue.value_text) {
-            // 文字列 "2025-01-01~2025-01-03" を分割
+            // 文字列 "2025-01-01~2025-01-03"(例) を分割
             const [startStr, endStr] = rangeValue.value_text.split("~");
 
             if (startStr && endStr) {
@@ -209,12 +233,11 @@ export async function PATCH(
             }
           }
         }
-        // =================================================
 
         return updatedFlow;
       },
       {
-        // ★このオプションを追加！
+        // タイムアウトしないように待ち時間を編集
         maxWait: 5000, // トランザクション開始待ち (5秒)
         timeout: 10000, // 実行時間リミット (10秒に延長)
       }

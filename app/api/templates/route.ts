@@ -6,6 +6,12 @@ import { z } from "zod";
 import { TemplateSchema } from "@/schemas/template";
 
 // templatesテーブルから一覧を取得する
+/**
+ * テンプレート一覧を取得するAPI
+ *  * @auth 必須
+ * @method GET
+ * @returns {Promise<NextResponse>} テンプレート一覧のJSON配列
+ */
 export async function GET() {
   try {
     // 必要な情報を取得
@@ -41,6 +47,13 @@ export async function GET() {
   }
 }
 
+/**
+ * テンプレートを作成するAPI
+ * * @auth 必須 テンプレート作成権限
+ * @method POST
+ * @param request NextRequest
+ * @returns 成功メッセージとステータスコード
+ */
 export async function POST(request: NextRequest) {
   try {
     // tokenの情報を取得
