@@ -90,7 +90,7 @@ export async function POST(request: NextRequest) {
     // フロントのデータが正しいかzodを使い検証し、型を変換する
     const validatedData = TemplateSchema.parse(data);
     // validatedDataから各値を分割代入で取り出す
-    const { name, description, elements } = validatedData;
+    const { name, description, elements, approval_routes } = validatedData;
     // テンプレ作成者のIDもtokenから取得
     const createdById = token.id;
 
@@ -118,6 +118,18 @@ export async function POST(request: NextRequest) {
       await tx.template_elements.createMany({
         data: elementsToCreate,
       });
+
+      if (approval_routes && approval_routes.length > 0) {
+        const routesToCreate = approval_routes.map((route) => ({
+          template_id: newTemplates.id,
+          step_order: route.step_order,
+          approver_user_id: route.approver_user_id,
+        }));
+
+        await tx.template_approval_routes.createMany({
+          data: routesToCreate,
+        });
+      }
 
       return newTemplates;
     });
