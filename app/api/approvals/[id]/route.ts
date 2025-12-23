@@ -92,7 +92,7 @@ export async function GET(
 }
 
 /**
- * 申請のステータスを変更するAPI(申請 or 差し戻し)
+ * 申請のステータスを変更するAPI(承認 or 差し戻し)
  * * @auth 必須 自分が承認者
  * @method PATCH
  * @param request NextRequest
