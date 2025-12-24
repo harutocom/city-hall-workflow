@@ -80,8 +80,10 @@ export default function ApprovalDetailPage() {
         }),
       });
 
-      if (!res.ok) throw new Error("処理失敗");
-
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || "処理失敗");
+      }
       // ★成功通知 (loadingを消してsuccessを表示)
       toast.dismiss(loadingToastId);
       toast.success(

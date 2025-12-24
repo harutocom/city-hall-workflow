@@ -39,16 +39,16 @@ export async function GET(
 
     // 申請ID
     const { id } = await params;
-    const approvalFlowId = parseInt(id);
+    const stepId = parseInt(id);
     // idが無かった場合のエラー処理
-    if (isNaN(approvalFlowId)) {
+    if (isNaN(stepId)) {
       return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
     }
 
     // 3. 申請詳細を取得
-    const approval = await db.approval_flows.findUnique({
+    const approval = await db.application_approval_steps.findUnique({
       where: {
-        id: approvalFlowId,
+        id: stepId,
       },
       include: {
         applications: {
@@ -92,7 +92,7 @@ export async function GET(
 }
 
 /**
- * 申請のステータスを変更するAPI(申請 or 差し戻し)
+ * 申請のステータスを変更するAPI(承認 or 差し戻し)
  * * @auth 必須 自分が承認者
  * @method PATCH
  * @param request NextRequest
@@ -121,8 +121,8 @@ export async function PATCH(
     // 2. トークンからIDの取得
     const userId = parsedToken.data.id; // userID
     const { id } = await params; // 選択された申請ID
-    const approvalFlowId = parseInt(id);
-    if (isNaN(approvalFlowId))
+    const stepId = parseInt(id);
+    if (isNaN(stepId))
       return NextResponse.json({ message: "Invalid ID" }, { status: 400 });
 
     // 3. フロントから送られてきたデータを取得し検証
@@ -140,30 +140,29 @@ export async function PATCH(
     // トランザクション処理開始
     const result = await db.$transaction(
       async (tx) => {
-        // 4.1 statusを更新
+        // 4.1 申請内容を取得
 
         // まず対象の承認タスクを取得
-        const currentFlow = await tx.approval_flows.findUnique({
-          where: { id: approvalFlowId },
+        const currentStep = await tx.application_approval_steps.findUnique({
+          where: { id: stepId },
+          include: {
+            applications: {
+              include: {
+                // 減算ロジック用にテンプレートと値を取得しておく
+                application_templates: true,
+                application_values: true,
+              },
+            },
+          },
         });
 
         // 権限チェック & ステータスチェック
-        if (!currentFlow || currentFlow.approver_id !== userId) {
+        if (!currentStep || currentStep.approver_id !== userId) {
           throw new Error("FORBIDDEN"); // 自分のじゃない
         }
-        if (currentFlow.action !== "pending") {
+        if (currentStep.status !== "PENDING") {
           throw new Error("ALREADY_PROCESSED"); // 既に承認/差戻し済み
         }
-
-        // 承認フローのステータス更新
-        const updatedFlow = await tx.approval_flows.update({
-          where: { id: approvalFlowId },
-          data: {
-            action: action, // "approve" or "remand"
-            comment: comment,
-            acted_at: new Date(),
-          },
-        });
 
         // 申請本体 (Applications) のステータス更新
         let newAppStatus = "";
@@ -173,8 +172,53 @@ export async function PATCH(
           newAppStatus = "approved"; // 承認：承認済みにする
         }
 
+        // 4.2 現在のステップを更新(申請本体ではなく承認ルートのステータス)
+        const updatedStep = await tx.application_approval_steps.update({
+          where: { id: stepId },
+          data: {
+            status: action === "approve" ? "APPROVED" : "REMANDED",
+            comment: comment,
+            acted_at: new Date(),
+          },
+        });
+
+        // 4.3 差し戻しの場合ステップをリセットして処理を終了
+        if (action === "remand") {
+          // ★変更: 申請全体を下書きに戻し、ステップを1(最初)にリセット
+          await tx.applications.update({
+            where: { id: currentStep.application_id },
+            data: {
+              status: "draft",
+              current_step: 1,
+            },
+          });
+          // 差し戻しの場合はここで終了
+          return updatedStep;
+        }
+
+        // 4.4 次の承認者を探す
+        const nextStep = await tx.application_approval_steps.findFirst({
+          where: {
+            application_id: currentStep.application_id,
+            step_order: currentStep.step_order + 1,
+          },
+        });
+
+        // 4.5.1 次の承認者がいる場合、申請本体のステップを進めて終了
+        if (nextStep) {
+          // ★変更: アプリ本体の current_step を進めるだけ (完了にはしない)
+          await tx.applications.update({
+            where: { id: currentStep.application_id },
+            data: { current_step: nextStep.step_order },
+          });
+
+          // ここで終了（有給減算はまだしない！）
+          return updatedStep;
+        }
+
+        // 4.5.2 次の承認者が居ない場合、申請本体のステータスを更新する
         await tx.applications.update({
-          where: { id: currentFlow.application_id },
+          where: { id: currentStep.application_id },
           data: {
             status: newAppStatus,
             // 承認なら完了日時を入れる
@@ -182,13 +226,10 @@ export async function PATCH(
           },
         });
 
-        // =================================================
-        // ★追加機能: 「休暇願」承認時、期間から時間を計算して自動減算
-        // =================================================
-        // 4.2 休暇願の承認時は期間から時間を計算し自動減産する
+        // 4.6 休暇願の承認時は期間から時間を計算し自動減産する
         // 判断材料（テンプレート名・入力値）を取得
         const appData = await tx.applications.findUnique({
-          where: { id: currentFlow.application_id },
+          where: { id: currentStep.application_id },
           include: {
             application_templates: true,
             application_values: true,
@@ -234,7 +275,7 @@ export async function PATCH(
           }
         }
 
-        return updatedFlow;
+        return updatedStep;
       },
       {
         // タイムアウトしないように待ち時間を編集

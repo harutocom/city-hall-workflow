@@ -64,7 +64,6 @@ export default function ApplicationPage() {
         template_id: Number(templateId),
         status: "pending", // 申請として送信
         values: valuesPayload,
-        approvers: [{ approver_id: 1, step_order: 1 }], // ★MVP用: 課長(ID:1)固定
       };
 
       const res = await fetch("/api/applications", {

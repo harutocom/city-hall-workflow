@@ -34,10 +34,10 @@ export async function GET(request: NextRequest) {
     const userId = parsedToken.data.id;
 
     // 3. 承認待ちリストの取得
-    const pendingApprovals = await db.approval_flows.findMany({
+    const pendingApprovals = await db.application_approval_steps.findMany({
       where: {
         approver_id: userId, // 自分宛て
-        action: "pending", // 未処理
+        status: "PENDING", // 未処理
       },
       // 一覧表示に必要な情報を結合して取ってくる
       include: {
@@ -55,7 +55,7 @@ export async function GET(request: NextRequest) {
         },
       },
       orderBy: {
-        acted_at: "desc", // 新しい順
+        created_at: "desc", // 新しい順
       },
     });
 

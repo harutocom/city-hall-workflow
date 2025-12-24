@@ -30,6 +30,28 @@ model application_templates {
   users             users?              @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   applications      applications[]
   template_elements template_elements[]
+  // このテンプレートの承認ルート定義
+  approval_routes  template_approval_routes[]
+}
+
+// ★新規: 承認ルート定義（テンプレート作成時に設定）
+model template_approval_routes {
+  id               Int      @id @default(autoincrement())
+  template_id      Int
+  step_order       Int      // 1, 2, 3...
+  
+  // Pilot版は approver_user_id を使用。将来は role_id を使用。
+  approver_user_id Int?     
+  approver_role_id Int?
+
+  created_at       DateTime @default(now()) @db.Timestamp(6)
+  updated_at       DateTime @default(now()) @db.Timestamp(6)
+
+  application_templates application_templates @relation(fields: [template_id], references: [id], onDelete: Cascade)
+  users                 users?                @relation(fields: [approver_user_id], references: [id])
+  roles                 roles?                @relation(fields: [approver_role_id], references: [id])
+
+  @@unique([template_id, step_order])
 }
 
 model application_values {
@@ -50,15 +72,40 @@ model applications {
   applicant_id            Int
   template_id             Int
   status                  String                    @db.VarChar(50)
+  // ★追加: 現在の進行状況 (1, 2, 3...)
+  current_step            Int      @default(1)
   submitted_at            DateTime?                 @db.Timestamp(6)
   completed_at            DateTime?                 @db.Timestamp(6)
   created_at              DateTime                  @default(now()) @db.Timestamp(6)
   updated_at              DateTime                  @default(now()) @db.Timestamp(6)
   application_attachments application_attachments[]
   application_values      application_values[]
+  // ★追加: 申請ごとの承認ステップ実体
+  approval_steps          application_approval_steps[]
   users                   users                     @relation(fields: [applicant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   application_templates   application_templates     @relation(fields: [template_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   approval_flows          approval_flows[]
+}
+
+// ★新規: 承認ステップ実体（申請時にルート定義からコピーされる）
+model application_approval_steps {
+  id              Int          @id @default(autoincrement())
+  application_id  Int
+  step_order      Int          // 1, 2, 3...
+  
+  approver_id     Int          // 実際に承認すべきユーザー
+  status          String       @default("PENDING") @db.VarChar(20) // PENDING, APPROVED, REMANDED
+  
+  acted_at        DateTime?    @db.Timestamp(6)
+  comment         String?      @db.Text
+
+  created_at      DateTime     @default(now()) @db.Timestamp(6)
+  updated_at      DateTime     @default(now()) @db.Timestamp(6)
+
+  applications    applications @relation(fields: [application_id], references: [id], onDelete: Cascade)
+  users           users        @relation(fields: [approver_id], references: [id], onDelete: NoAction)
+
+  @@unique([application_id, step_order])
 }
 
 model approval_flows {
@@ -95,6 +142,8 @@ model roles {
   id    Int     @id @default(autoincrement())
   name  String  @unique @db.VarChar(255)
   users users[]
+  // ★追加: このロールが割り当てられた承認ルート定義
+  template_approval_routes template_approval_routes[]
 }
 
 model template_elements {
@@ -128,6 +177,9 @@ model users {
   created_at              DateTime                  @default(now()) @db.Timestamp(6)
   updated_at              DateTime                  @default(now()) @db.Timestamp(6)
   deleted_at              DateTime?                 @db.Timestamp(6)
+  // ★追加: 承認関連のリレーション
+  template_approval_routes   template_approval_routes[]
+  application_approval_steps application_approval_steps[]
   application_attachments application_attachments[]
   application_templates   application_templates[]
   applications            applications[]

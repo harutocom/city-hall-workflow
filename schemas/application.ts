@@ -18,39 +18,35 @@ const ApproverSchema = z.object({
 });
 
 // POST /api/applications のリクエストボディ全体のスキーマ
-export const ApplicationCreateSchema = z
-  .object({
-    template_id: z.number().int().positive({
-      message: "テンプレートIDは必須です。",
-    }),
+export const ApplicationCreateSchema = z.object({
+  template_id: z.number().int().positive({
+    message: "テンプレートIDは必須です。",
+  }),
 
-    // MVPでは "pending" のみだが、将来性のため "draft" も許可
-    status: z.enum(["draft", "pending"], {
-      message: "ステータスは 'draft' または 'pending' である必要があります。",
-    }),
+  // MVPでは "pending" のみだが、将来性のため "draft" も許可
+  status: z.enum(["draft", "pending"], {
+    message: "ステータスは 'draft' または 'pending' である必要があります。",
+  }),
 
-    // 1件以上の入力値が必要
-    values: z.array(ApplicationValueSchema).min(1, {
-      message: "申請内容（values）は必須です。",
-    }),
-
-    // 承認者リスト
-    approvers: z.array(ApproverSchema),
-  })
-  .refine(
-    (data) => {
-      // もし status が "pending" (送信) なら、
-      // 承認者(approvers)は1人以上必須
-      if (data.status === "pending") {
-        return data.approvers.length > 0;
-      }
-      // "draft" (一時保存) なら、承認者が0人でもOK
-      return true;
-    },
-    {
-      message:
-        "送信（pending）する場合、承認者（approvers）は1人以上必要です。",
-      // このエラーが "approvers" フィールドに関連することを指定
-      path: ["approvers"],
-    }
-  );
+  // 1件以上の入力値が必要
+  values: z.array(ApplicationValueSchema).min(1, {
+    message: "申請内容（values）は必須です。",
+  }),
+});
+// .refine(
+//   (data) => {
+//     // もし status が "pending" (送信) なら、
+//     // 承認者(approvers)は1人以上必須
+//     if (data.status === "pending") {
+//       return data.approvers.length > 0;
+//     }
+//     // "draft" (一時保存) なら、承認者が0人でもOK
+//     return true;
+//   },
+//   {
+//     message:
+//       "送信（pending）する場合、承認者（approvers）は1人以上必要です。",
+//     // このエラーが "approvers" フィールドに関連することを指定
+//     path: ["approvers"],
+//   }
+// );

@@ -123,7 +123,7 @@ export async function POST(request: NextRequest) {
     // 2. フロントからのデータを取得
     const data = await request.json();
     const validatedData = ApplicationCreateSchema.parse(data);
-    const { template_id, status, values, approvers } = validatedData;
+    const { template_id, status, values } = validatedData;
     const applicant_id = parsedToken.data.id; // 申請者をtokenから取得
 
     // 3. 申請データ作成
@@ -136,6 +136,7 @@ export async function POST(request: NextRequest) {
             applicant_id: applicant_id,
             template_id: template_id,
             status: status,
+            current_step: 1,
           },
         });
 
@@ -186,19 +187,34 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        // 申請された場合のみ承認フローを保存
-        if (status === "pending" && approvers.length > 0) {
-          const flowData = approvers.map((approver) => ({
-            application_id: newApplication.id,
-            approver_id: approver.approver_id,
-            action: "pending", // 未承認なので "pending"
-            comment: null,
-          }));
-
-          // 承認フローを作成
-          await tx.approval_flows.createMany({
-            data: flowData,
+        // 申請された場合に承認ルートをテーブルから取得し保存
+        if (status === "pending") {
+          // A. テンプレートに定義されたルートマスタをDBから取得
+          const definedRoutes = await tx.template_approval_routes.findMany({
+            where: { template_id: template_id },
+            orderBy: { step_order: "asc" },
           });
+
+          if (definedRoutes.length > 0) {
+            // B. マスタをコピーして実体(steps)を作成
+            const stepsData = definedRoutes.map((route) => ({
+              application_id: newApplication.id,
+              step_order: route.step_order,
+              approver_id: route.approver_user_id!, // Pilot版はUser直接指定(非Null)
+              status: "PENDING",
+            }));
+
+            // ★新しいテーブル application_approval_steps に保存
+            await tx.application_approval_steps.createMany({
+              data: stepsData,
+            });
+          } else {
+            // ルート定義がない場合 (デモ等で急に作ったテンプレートなど)
+            console.warn(
+              `Template ${template_id} has no approval routes defined.`
+            );
+            // 要件によりますが、今回はエラーにせず「承認なし」として通します
+          }
         }
         return newApplication;
       },
