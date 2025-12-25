@@ -226,7 +226,7 @@ export async function PATCH(
           },
         });
 
-        // 4.6 休暇願の承認時は期間から時間を計算し自動減産する
+        // 4.6 休暇願の承認時は期間から時間を計算し自動減算する
         // 判断材料（テンプレート名・入力値）を取得
         const appData = await tx.applications.findUnique({
           where: { id: currentStep.application_id },
@@ -236,10 +236,10 @@ export async function PATCH(
           },
         });
 
-        // 条件: 「承認」かつ「テンプレート名に'休暇'が含まれる」
+        // 条件: 「承認」かつ「application_templatesのauto_deduct_leaveがtrue」
         if (
           action === "approve" &&
-          appData?.application_templates.name.includes("休暇")
+          appData?.application_templates.auto_deduct_leave
         ) {
           // 期間入力(DateRange)の値を探す ("~" が含まれていれば期間とみなす)
           const rangeValue = appData.application_values.find(

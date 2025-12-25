@@ -28,6 +28,7 @@ model application_templates {
   created_at        DateTime            @default(now()) @db.Timestamp(6)
   updated_at        DateTime            @default(now()) @db.Timestamp(6)
   deleted_at        DateTime?
+  auto_deduct_leave Boolean @default(false)
   users             users?              @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   applications      applications[]
   template_elements template_elements[]

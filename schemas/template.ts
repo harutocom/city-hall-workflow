@@ -20,6 +20,7 @@ export const TemplateSchema = z.object({
   description: z.string().nullable().optional(),
   elements: z.array(TemplateElementSchema).min(1),
   approval_routes: z.array(ApprovalRouteSchema).optional(),
+  auto_deduct_leave: z.boolean().default(false),
 });
 
 export const TemplateIdParamSchema = z.object({
