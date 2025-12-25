@@ -16,6 +16,9 @@ export async function GET() {
   try {
     // 必要な情報を取得
     const templates = await db.application_templates.findMany({
+      where: {
+        deleted_at: null,
+      },
       select: {
         id: true,
         name: true,
