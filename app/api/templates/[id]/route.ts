@@ -247,19 +247,12 @@ export async function DELETE(
       });
     }
 
-    await db.$transaction(async (tx) => {
-      // templateIdのデータをtemplate_elementsテーブルから削除
-      await tx.template_elements.deleteMany({
-        where: { template_id: templateId },
-      });
-
-      // templateIdのデータをapplication_templatesテーブルから削除
-      await tx.application_templates.delete({
-        where: { id: templateId },
-      });
-
-      // 削除なので何も返さない
-      return;
+    // 物理削除 (delete) ではなく、deleted_at に日時を入れる (update)
+    const deletedTemplate = await db.application_templates.update({
+      where: { id: templateId },
+      data: {
+        deleted_at: new Date(), // 現在日時を記録＝削除扱い
+      },
     });
 
     // 返すものが無いのでメッセージと204 No Contentを返す
