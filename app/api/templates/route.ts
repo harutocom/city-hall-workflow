@@ -93,24 +93,26 @@ export async function POST(request: NextRequest) {
     // フロントのデータが正しいかzodを使い検証し、型を変換する
     const validatedData = TemplateSchema.parse(data);
     // validatedDataから各値を分割代入で取り出す
-    const { name, description, elements, approval_routes } = validatedData;
+    const { name, description, elements, approval_routes, auto_deduct_leave } =
+      validatedData;
     // テンプレ作成者のIDもtokenから取得
     const createdById = token.id;
 
     // DBに矛盾が生じないようにトランザクション処理を開始
     await db.$transaction(async (tx) => {
       // 親テーブルのapplication_templatesにデータを作成
-      const newTemplates = await tx.application_templates.create({
+      const newTemplate = await tx.application_templates.create({
         data: {
           name: name,
           description: description,
           created_by: parseInt(createdById, 10),
+          auto_deduct_leave: auto_deduct_leave ?? false,
         },
       });
 
       // テンプレに必要な複数のフロントからのデータを配列として持っておく
       const elementsToCreate = elements.map((element) => ({
-        template_id: newTemplates.id,
+        template_id: newTemplate.id,
         component_name: element.component_name,
         sort_order: element.sort_order,
         props: element.props,
@@ -124,7 +126,7 @@ export async function POST(request: NextRequest) {
 
       if (approval_routes && approval_routes.length > 0) {
         const routesToCreate = approval_routes.map((route) => ({
-          template_id: newTemplates.id,
+          template_id: newTemplate.id,
           step_order: route.step_order,
           approver_user_id: route.approver_user_id,
         }));
@@ -134,7 +136,7 @@ export async function POST(request: NextRequest) {
         });
       }
 
-      return newTemplates;
+      return newTemplate;
     });
 
     // テンプレート追加処理成功時のレスポンス
