@@ -33,6 +33,7 @@ export default function TemplateCreatePage() {
   const [users, setUsers] = useState<User[]>([]); // 選択肢となるユーザー一覧
   const [isModalOpen, setIsModalOpen] = useState(false); // モーダルの開閉
   const [approvalRoutes, setApprovalRoutes] = useState<(string | "")[]>([""]); // 選択された承認者ID (順番 = インデックス)
+  const [autoDeductLeave, setAutoDeductLeave] = useState<boolean>(false);
 
   const selectedComponent =
     components.find((component) => component.id === selectedComponentId) ||
@@ -98,6 +99,7 @@ export default function TemplateCreatePage() {
       description,
       elements,
       approval_routes: formattedRoutes, // ★ここに追加！
+      auto_deduct_leave: autoDeductLeave,
     };
 
     try {
@@ -289,6 +291,29 @@ export default function TemplateCreatePage() {
             >
               + 次の承認者を追加
             </button>
+            <div className="mt-6 pt-4 border-t border-gray-100">
+              <h3 className="text-sm font-bold text-gray-700 mb-2">
+                オプション設定
+              </h3>
+              <label className="flex items-start gap-3 p-3 border border-gray-200 rounded-md hover:bg-gray-50 cursor-pointer transition-colors">
+                <input
+                  type="checkbox"
+                  className="mt-1 w-4 h-4 text-[#1F6C7E] border-gray-300 rounded focus:ring-[#1F6C7E]"
+                  checked={autoDeductLeave}
+                  onChange={(e) => setAutoDeductLeave(e.target.checked)}
+                />
+                <div>
+                  <span className="block text-sm font-bold text-gray-800">
+                    承認完了時に「有給・残余時間」を自動で減算する
+                  </span>
+                  <span className="block text-xs text-gray-500 mt-1 leading-relaxed">
+                    ※休暇申請など、時間の消費を伴う場合にオンにしてください。
+                    <br />
+                    ※フォーム内の期間入力をもとに計算されます。
+                  </span>
+                </div>
+              </label>
+            </div>
 
             {/* アクションボタン */}
             <div className="flex justify-end gap-3 pt-4 border-t">
