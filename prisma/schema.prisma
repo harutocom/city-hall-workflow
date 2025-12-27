@@ -80,6 +80,7 @@ model applications {
   completed_at            DateTime?                 @db.Timestamp(6)
   created_at              DateTime                  @default(now()) @db.Timestamp(6)
   updated_at              DateTime                  @default(now()) @db.Timestamp(6)
+  deleted_at              DateTime?
   application_attachments application_attachments[]
   application_values      application_values[]
   // ★追加: 申請ごとの承認ステップ実体

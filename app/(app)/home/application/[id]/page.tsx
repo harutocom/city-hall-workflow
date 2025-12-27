@@ -4,6 +4,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import toast, { Toaster } from "react-hot-toast";
 import ApplicationDetailViewer from "@/components/features/applications/ApplicationDetailViewer";
 import { FormComponent } from "@/types/template";
 
@@ -56,12 +57,34 @@ export default function ApplicationDetailPage() {
     fetchDetail();
   }, [id, router]);
 
+  const handleDelete = async () => {
+    if (!detail) return;
+    if (!window.confirm("本当に削除/取り下げを行いますか？")) return;
+
+    try {
+      const res = await fetch(`/api/applications/${id}`, {
+        method: "DELETE",
+      });
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "削除失敗");
+      }
+
+      toast.success("削除しました");
+      router.push("/home/application");
+      router.refresh();
+    } catch (error) {
+      toast.error("エラーが発生しました");
+      console.error(error);
+    }
+  };
   if (loading) return <div className="p-10 text-center">読み込み中...</div>;
   if (!detail)
     return <div className="p-10 text-center">データが見つかりません</div>;
 
   return (
     <main className="max-w-4xl mx-auto py-10 px-4">
+      <Toaster />
       <div className="mb-4">
         <Link
           href="/home/application"
@@ -121,6 +144,16 @@ export default function ApplicationDetailPage() {
           values={detail.application_values}
         />
       </div>
+      {(detail.status === "draft" || detail.status === "pending") && (
+        <div className="mt-8 pt-4 border-t border-gray-200 text-right">
+          <button
+            onClick={handleDelete}
+            className="gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors"
+          >
+            {detail.status === "draft" ? "下書きを削除" : "申請を取り下げる"}
+          </button>
+        </div>
+      )}
     </main>
   );
 }
