@@ -40,6 +40,7 @@ export async function GET(request: NextRequest) {
     // 変数を作成
     const whereCondition: Prisma.applicationsWhereInput = {
       applicant_id: userId,
+      deleted_at: null,
     };
     // statusを入れる
     if (statusParam) {
