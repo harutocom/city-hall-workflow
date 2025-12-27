@@ -61,7 +61,7 @@ export default function ApprovalDetailPage() {
     fetchDetail();
   }, [id, router]);
 
-  const handleAction = async (action: "approve" | "remand") => {
+  const handleAction = async (action: "approve" | "remanded") => {
     if (!confirm(action === "approve" ? "承認しますか？" : "差し戻しますか？"))
       return;
 
@@ -167,7 +167,7 @@ export default function ApprovalDetailPage() {
         <div className="flex justify-end gap-4">
           {/* 差し戻し (リセット風の赤) */}
           <button
-            onClick={() => handleAction("remand")}
+            onClick={() => handleAction("remanded")}
             disabled={processing}
             className={`flex items-center justify-center gap-2 px-8 py-3 rounded text-white font-bold transition-all
               ${

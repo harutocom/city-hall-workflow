@@ -131,7 +131,7 @@ export async function PATCH(
     // バリデーション: actionは "approve" か "remand" のみ許可
     const { action, comment } = z
       .object({
-        action: z.enum(["approve", "remand"]),
+        action: z.enum(["approve", "remanded"]),
         comment: z.string().optional(),
       })
       .parse(body);
@@ -166,8 +166,8 @@ export async function PATCH(
 
         // 申請本体 (Applications) のステータス更新
         let newAppStatus = "";
-        if (action === "remand") {
-          newAppStatus = "draft"; // 差し戻し：下書きに戻す(再編集可能に)
+        if (action === "remanded") {
+          newAppStatus = "remanded"; // 差し戻し：下書きに戻す(再編集可能に)
         } else {
           newAppStatus = "approved"; // 承認：承認済みにする
         }
@@ -183,12 +183,12 @@ export async function PATCH(
         });
 
         // 4.3 差し戻しの場合ステップをリセットして処理を終了
-        if (action === "remand") {
+        if (action === "remanded") {
           // ★変更: 申請全体を下書きに戻し、ステップを1(最初)にリセット
           await tx.applications.update({
             where: { id: currentStep.application_id },
             data: {
-              status: "draft",
+              status: newAppStatus,
               current_step: 1,
             },
           });
