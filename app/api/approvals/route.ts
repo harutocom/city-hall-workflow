@@ -38,6 +38,9 @@ export async function GET(request: NextRequest) {
       where: {
         approver_id: userId, // 自分宛て
         status: "PENDING", // 未処理
+        applications: {
+          deleted_at: null,
+        },
       },
       // 一覧表示に必要な情報を結合して取ってくる
       include: {
