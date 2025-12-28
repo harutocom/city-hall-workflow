@@ -173,6 +173,7 @@ export async function POST(request: NextRequest) {
 
           return {
             application_id: newApplication.id,
+            template_element_id: item.elementId,
             sort_order: item.sort_order, // フロントから送られてきた順序を使用
             value_text: valText,
             value_number: valNumber,

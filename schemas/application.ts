@@ -4,11 +4,14 @@ import { z } from "zod";
 
 // values配列の中身（1項目分）のスキーマ
 const ApplicationValueSchema = z.object({
-  sort_order: z.number().int().positive(),
+  elementId: z.number().int().positive({
+    message: "要素ID(elementId)は必須です。",
+  }),
+  sort_order: z.number().int().nonnegative(),
 
   // valueは「文字列、数値、真偽値」のいずれか
   // 日付もフロントからは文字列(ISO 8601)で送られてくる想定
-  value: z.union([z.string(), z.number(), z.boolean()]),
+  value: z.union([z.string(), z.number(), z.boolean()]).nullable(),
 });
 
 // approvers配列の中身（1人分）のスキーマ

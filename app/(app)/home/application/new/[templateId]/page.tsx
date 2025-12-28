@@ -22,22 +22,36 @@ export default function ApplicationPage() {
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [answers, setAnswers] = useState<Record<number, any>>({}); // { sort_order: 値 }
   const [submitting, setSubmitting] = useState(false);
+  // useStateの行をこれに書き換え
+  const [templateElements, setTemplateElements] = useState<
+    { id: number; sort_order: number }[]
+  >([]);
 
   // --- 1. 残余時間の取得 ---
   useEffect(() => {
-    const fetchRemainingTime = async () => {
+    const fetchData = async () => {
       try {
+        // (A) 残余時間の取得 (既存)
         const res = await fetch("/api/me/remaining-leave");
         if (res.ok) {
           const data = await res.json();
           setRemainingTime(Number(data.remaining_leave_hours));
         }
+
+        // (B) ★追加: テンプレート情報の取得
+        // ※ IDを知るために必要
+        const tmplRes = await fetch(`/api/templates/${templateId}`);
+        if (tmplRes.ok) {
+          const tmplData = await tmplRes.json();
+          // 要素リストを保存 (sort_order と id の対応表として使う)
+          setTemplateElements(tmplData.template_elements);
+        }
       } catch (error) {
-        console.error("残余時間取得エラー", error);
+        console.error("初期データ取得エラー", error);
       }
     };
-    fetchRemainingTime();
-  }, []);
+    fetchData();
+  }, [templateId]); // templateIdが変わったら再取得
 
   // --- 2. 入力値の更新ハンドラ (PreviewTemplateに渡す) ---
   const handleAnswerChange = (sortOrder: number, value: any) => {
@@ -55,11 +69,20 @@ export default function ApplicationPage() {
 
     try {
       // API形式に変換
-      const valuesPayload = Object.entries(answers).map(([key, val]) => ({
-        sort_order: Number(key),
-        value: val,
-      }));
+      const valuesPayload = Object.entries(answers).map(([key, val]) => {
+        const sortOrder = Number(key);
 
+        // リストから検索
+        const element = templateElements.find(
+          (el) => el.sort_order === sortOrder
+        );
+
+        return {
+          elementId: element?.id, // ★追加
+          sort_order: sortOrder,
+          value: val,
+        };
+      });
       const payload = {
         template_id: Number(templateId),
         status: "pending", // 申請として送信
