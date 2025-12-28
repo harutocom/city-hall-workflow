@@ -59,6 +59,7 @@ model template_approval_routes {
 model application_values {
   id                Int               @id @default(autoincrement())
   application_id    Int
+  template_element_id Int
   sort_order     Int  
   value_text     String?   @db.Text
   value_number   Int?
@@ -67,6 +68,7 @@ model application_values {
   created_at        DateTime          @default(now()) @db.Timestamp(6)
   updated_at        DateTime          @default(now()) @db.Timestamp(6)
   applications      applications      @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  template_elements   template_elements @relation(fields: [template_element_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model applications {
@@ -157,6 +159,7 @@ model template_elements {
   props                 Json                  @default("{}")
   data_type             String?
   application_templates application_templates @relation(fields: [template_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  application_values application_values[]
 }
 
 model user_permissions {
