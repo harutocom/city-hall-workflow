@@ -22,6 +22,9 @@ export default function ApplicationEditPage() {
   const [answers, setAnswers] = useState<Record<number, any>>({}); // { sort_order: 値 }
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true); // 全体のロード中フラグ
+  const [templateElements, setTemplateElements] = useState<
+    { id: number; sort_order: number }[]
+  >([]);
 
   // --- 1. 初期データのロード (申請データ & 残余時間) ---
   useEffect(() => {
@@ -41,6 +44,7 @@ export default function ApplicationEditPage() {
 
         // テンプレートIDを保存
         setTemplateId(appData.template_id);
+        setTemplateElements(appData.application_templates.template_elements);
 
         // ★重要: 既存の回答データを answers の形式に変換してセット
         const initialAnswers: Record<number, any> = {};
@@ -86,11 +90,25 @@ export default function ApplicationEditPage() {
 
     try {
       // API形式に変換
-      const valuesPayload = Object.entries(answers).map(([key, val]) => ({
-        sort_order: Number(key),
-        value: val,
-      }));
+      const valuesPayload = Object.entries(answers).map(([key, val]) => {
+        const sortOrder = Number(key);
 
+        // 保存しておいたリストから、同じ sort_order の要素を探す
+        const element = templateElements.find(
+          (el) => el.sort_order === sortOrder
+        );
+
+        // もし見つからなかったらエラーにするか、とりあえず進める（基本見つかるはず）
+        if (!element) {
+          console.error(`Element not found for sort_order: ${sortOrder}`);
+        }
+
+        return {
+          elementId: element?.id, // ★これが一番大事！
+          sort_order: sortOrder,
+          value: val,
+        };
+      });
       const payload = {
         template_id: Number(templateId),
         status: isDraft ? "draft" : "pending", // 下書きならdraft, 申請ならpending
