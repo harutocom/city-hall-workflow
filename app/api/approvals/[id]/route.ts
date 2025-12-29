@@ -182,7 +182,18 @@ export async function PATCH(
           },
         });
 
-        // 4.3 差し戻しの場合ステップをリセットして処理を終了
+        // 4.3 Log作成
+        await tx.approval_logs.create({
+          data: {
+            application_id: currentStep.application_id, // どの申請か
+            approver_id: userId, // 誰が承認/差戻ししたか
+            action: action, // "approve" か "remanded"
+            comment: comment, // その時のコメント（履歴用）
+            acted_at: new Date(), // いつの操作か
+          },
+        });
+
+        // 4.4 差し戻しの場合ステップをリセットして処理を終了
         if (action === "remanded") {
           // ★変更: 申請全体を下書きに戻し、ステップを1(最初)にリセット
           await tx.applications.update({
@@ -196,7 +207,7 @@ export async function PATCH(
           return updatedStep;
         }
 
-        // 4.4 次の承認者を探す
+        // 4.5 次の承認者を探す
         const nextStep = await tx.application_approval_steps.findFirst({
           where: {
             application_id: currentStep.application_id,
@@ -204,7 +215,7 @@ export async function PATCH(
           },
         });
 
-        // 4.5.1 次の承認者がいる場合、申請本体のステップを進めて終了
+        // 4.6.1 次の承認者がいる場合、申請本体のステップを進めて終了
         if (nextStep) {
           // ★変更: アプリ本体の current_step を進めるだけ (完了にはしない)
           await tx.applications.update({
@@ -216,7 +227,7 @@ export async function PATCH(
           return updatedStep;
         }
 
-        // 4.5.2 次の承認者が居ない場合、申請本体のステータスを更新する
+        // 4.6.2 次の承認者が居ない場合、申請本体のステータスを更新する
         await tx.applications.update({
           where: { id: currentStep.application_id },
           data: {
@@ -226,7 +237,7 @@ export async function PATCH(
           },
         });
 
-        // 4.6 休暇願の承認時は期間から時間を計算し自動減算する
+        // 4.7 休暇願の承認時は期間から時間を計算し自動減算する
         // 判断材料（テンプレート名・入力値）を取得
         const appData = await tx.applications.findUnique({
           where: { id: currentStep.application_id },
@@ -274,7 +285,6 @@ export async function PATCH(
             }
           }
         }
-
         return updatedStep;
       },
       {
