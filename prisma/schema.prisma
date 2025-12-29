@@ -89,7 +89,7 @@ model applications {
   approval_steps          application_approval_steps[]
   users                   users                     @relation(fields: [applicant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   application_templates   application_templates     @relation(fields: [template_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  approval_flows          approval_flows[]
+  approval_logs           approval_logs[]
 }
 
 // ★新規: 承認ステップ実体（申請時にルート定義からコピーされる）
@@ -113,15 +113,15 @@ model application_approval_steps {
   @@unique([application_id, step_order])
 }
 
-model approval_flows {
+model approval_logs {
   id             Int          @id @default(autoincrement())
   application_id Int
   approver_id    Int
   action         String       @db.VarChar(50)
   comment        String?
   acted_at       DateTime     @default(now()) @db.Timestamp(6)
-  applications   applications @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users          users        @relation(fields: [approver_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  applications   applications @relation(fields: [application_id], references: [id], onDelete: NoAction)
+  users          users        @relation(fields: [approver_id], references: [id], onDelete: NoAction)
 }
 
 model departments {
@@ -189,7 +189,7 @@ model users {
   application_attachments application_attachments[]
   application_templates   application_templates[]
   applications            applications[]
-  approval_flows          approval_flows[]
+  approval_logs           approval_logs[]
   user_permissions        user_permissions[]
   departments             departments?              @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   roles                   roles?                    @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
