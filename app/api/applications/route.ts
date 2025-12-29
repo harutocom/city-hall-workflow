@@ -54,8 +54,8 @@ export async function GET(request: NextRequest) {
         application_templates: {
           select: { name: true }, // 別のテーブルからテンプレート名も取得
         },
-        approval_flows: {
-          // 別のapproval_flowsからもデータを取得
+        approval_logs: {
+          // 別のapproval_logsからもデータを取得
           select: {
             approver_id: true, // 承認者ID
             action: true, // 承認者がこの申請に行ったアクション(pending or rejected or approved)

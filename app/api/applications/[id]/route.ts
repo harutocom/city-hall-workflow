@@ -61,6 +61,13 @@ export async function GET(
         application_values: {
           orderBy: { sort_order: "asc" },
         },
+        // 承認履歴ログを取得
+        approval_logs: {
+          include: {
+            users: { select: { name: true } }, // 承認者の名前も取得
+          },
+          orderBy: { acted_at: "desc" }, // 新しい順に並べる
+        },
       },
     });
 

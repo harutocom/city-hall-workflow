@@ -9,6 +9,16 @@ import ApplicationDetailViewer from "@/components/features/applications/Applicat
 import { FormComponent } from "@/types/template";
 
 // 型定義
+// ログの型定義
+type ApprovalLog = {
+  id: number;
+  action: string;
+  comment: string | null;
+  acted_at: string;
+  users: {
+    name: string;
+  };
+};
 type ApplicationDetail = {
   id: number;
   status: string;
@@ -25,7 +35,7 @@ type ApplicationDetail = {
     value_datetime: string | null;
     value_boolean: boolean | null;
   }[];
-  // 承認者情報なども表示したければここに追加
+  approval_logs?: ApprovalLog[];
 };
 
 export default function ApplicationDetailPage() {
@@ -119,7 +129,17 @@ export default function ApplicationDetailPage() {
   // 削除/取下可能なステータス
   const isDeletable =
     detail && ["draft", "pending", "remanded"].includes(detail.status);
+  // ★追加: 最新の差し戻しログを探す（ステータスがremandedの時用）
+  const latestRemandLog = detail.approval_logs?.find(
+    (log) => log.action === "remanded"
+  );
 
+  // ★追加: アクション名の日本語化ヘルパー
+  const getActionLabel = (action: string) => {
+    if (action === "approve") return "承認";
+    if (action === "remanded") return "差し戻し";
+    return action;
+  };
   return (
     <main className="max-w-4xl mx-auto py-10 px-4">
       <Toaster />
@@ -137,6 +157,39 @@ export default function ApplicationDetailPage() {
       >
         申請詳細確認
       </h1>
+      {/* ★追加: 差し戻し時の警告メッセージエリア */}
+      {detail.status === "remanded" && latestRemandLog && (
+        <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-8 rounded-r-md shadow-sm animate-fade-in">
+          <div className="flex items-start">
+            <div className="flex-shrink-0">
+              <svg
+                className="h-5 w-5 text-red-500"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path
+                  fillRule="evenodd"
+                  d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z"
+                  clipRule="evenodd"
+                />
+              </svg>
+            </div>
+            <div className="ml-3">
+              <h3 className="text-sm font-bold text-red-800">
+                この申請は差し戻されました
+              </h3>
+              <div className="mt-2 text-sm text-red-700">
+                <p className="font-bold mb-1">
+                  {latestRemandLog.users.name} さんのコメント:
+                </p>
+                <p className="bg-white p-2 rounded border border-red-100">
+                  {latestRemandLog.comment || "コメントなし"}
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       {/* 基本情報 */}
       <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
@@ -168,6 +221,46 @@ export default function ApplicationDetailPage() {
           values={detail.application_values}
         />
       </div>
+      {/* ★追加: 承認履歴エリア */}
+      {detail.approval_logs && detail.approval_logs.length > 0 && (
+        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm mb-8">
+          <h2 className="text-xl font-bold mb-4 text-gray-800 border-b pb-2">
+            承認履歴
+          </h2>
+          <div className="space-y-4">
+            {detail.approval_logs.map((log) => (
+              <div key={log.id} className="flex gap-4 p-3 bg-gray-50 rounded">
+                <div className="flex-1">
+                  <div className="flex items-center justify-between mb-1">
+                    <span className="font-bold text-gray-700">
+                      {log.users.name}
+                    </span>
+                    <span className="text-xs text-gray-400">
+                      {new Date(log.acted_at).toLocaleString()}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span
+                      className={`text-xs px-2 py-0.5 rounded border ${
+                        log.action === "approve"
+                          ? "bg-green-50 text-green-700 border-green-200"
+                          : "bg-red-50 text-red-700 border-red-200"
+                      }`}
+                    >
+                      {getActionLabel(log.action)}
+                    </span>
+                  </div>
+                  {log.comment && (
+                    <p className="text-sm text-gray-600 bg-white p-2 rounded border border-gray-200">
+                      {log.comment}
+                    </p>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {/* アクションボタンエリア */}
       {(isEditable || isDeletable) && (
         <div className="mt-8 pt-6 border-t border-gray-200 flex flex-col-reverse sm:flex-row justify-end items-center gap-4">
