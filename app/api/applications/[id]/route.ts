@@ -68,6 +68,12 @@ export async function GET(
           },
           orderBy: { acted_at: "desc" }, // 新しい順に並べる
         },
+        approval_steps: {
+          include: {
+            users: { select: { name: true } }, // 承認者の名前
+          },
+          orderBy: { step_order: "asc" }, // 順番通りに
+        },
       },
     });
 

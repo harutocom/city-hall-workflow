@@ -200,7 +200,6 @@ export async function PATCH(
             where: { id: currentStep.application_id },
             data: {
               status: newAppStatus,
-              current_step: 1,
             },
           });
           // 差し戻しの場合はここで終了
