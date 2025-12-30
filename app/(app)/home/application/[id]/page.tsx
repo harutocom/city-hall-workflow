@@ -6,6 +6,7 @@ import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
 import ApplicationDetailViewer from "@/components/features/applications/ApplicationDetailViewer";
+import ApprovalRouteVisualizer from "@/components/features/applications/ApprovalRouteVisualizer";
 import { FormComponent } from "@/types/template";
 
 // 型定義
@@ -23,6 +24,7 @@ type ApplicationDetail = {
   id: number;
   status: string;
   created_at: string;
+  current_step: number;
   application_templates: {
     name: string;
     template_elements: (FormComponent & { sort_order: number })[];
@@ -36,6 +38,12 @@ type ApplicationDetail = {
     value_boolean: boolean | null;
   }[];
   approval_logs?: ApprovalLog[];
+  approval_steps: {
+    id: number;
+    step_order: number;
+    status: string;
+    users: { name: string };
+  }[];
 };
 
 export default function ApplicationDetailPage() {
@@ -190,7 +198,7 @@ export default function ApplicationDetailPage() {
           </div>
         </div>
       )}
-      {/* 基本情報 */}
+      {/* 基本情報
       <div className="bg-gray-50 p-6 rounded-lg border border-gray-200 mb-8 grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <p className="text-sm text-gray-500">テンプレート名</p>
@@ -211,6 +219,44 @@ export default function ApplicationDetailPage() {
           >
             {statusObj.label}
           </span>{" "}
+        </div>
+      </div> */}
+      {/* ★レイアウト変更: 2カラムにして右側に承認ルートを表示 */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        {/* 左側: 基本情報パネル (col-span-2) */}
+        <div className="lg:col-span-2 bg-gray-50 p-6 rounded-lg border border-gray-200 h-fit">
+          <h2 className="text-lg font-bold mb-4 text-gray-700">基本情報</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div>
+              <p className="text-sm text-gray-500">テンプレート名</p>
+              <p className="font-bold text-lg">
+                {detail.application_templates.name}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">申請日時</p>
+              <p className="font-bold text-lg">
+                {new Date(detail.created_at).toLocaleString()}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-500">ステータス</p>
+              <span
+                className={`inline-block mt-1 px-3 py-1 rounded-full text-sm font-bold border ${statusObj.className}`}
+              >
+                {statusObj.label}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        {/* ★右側: 承認ルート可視化 (col-span-1) */}
+        <div className="bg-white p-6 rounded-lg border border-gray-200 shadow-sm">
+          <ApprovalRouteVisualizer
+            steps={detail.approval_steps}
+            currentStep={detail.current_step}
+            applicationStatus={detail.status}
+          />
         </div>
       </div>
       {/* 申請内容 */}
