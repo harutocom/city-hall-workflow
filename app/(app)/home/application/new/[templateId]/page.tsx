@@ -115,6 +115,58 @@ export default function ApplicationPage() {
     }
   };
 
+  // --- 4. 下書き保存処理 (新規追加・ロジック内包) ---
+  const handleDraft = async () => {
+    if (!confirm("下書きを保存しますか？")) return;
+    setSubmitting(true);
+    const loadingToastId = toast.loading("保存しています...");
+
+    try {
+      // API形式に変換 (handleSubmitと同じ処理)
+      const valuesPayload = Object.entries(answers).map(([key, val]) => {
+        const sortOrder = Number(key);
+        const element = templateElements.find(
+          (el) => el.sort_order === sortOrder
+        );
+        return {
+          elementId: element?.id,
+          sort_order: sortOrder,
+          value: val,
+        };
+      });
+
+      const payload = {
+        template_id: Number(templateId),
+        status: "draft", // ★ここだけ draft に変更
+        values: valuesPayload,
+      };
+
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "下書き保存に失敗しました");
+      }
+
+      // ★成功通知
+      toast.dismiss(loadingToastId);
+      toast.success("下書き保存しました！");
+
+      router.push("/home/application?status=draft"); // 下書き一覧へ遷移
+      router.refresh();
+    } catch (error: any) {
+      console.error(error);
+      // ★エラー通知
+      toast.dismiss(loadingToastId);
+      toast.error(`エラー: ${error.message}`);
+    } finally {
+      setSubmitting(false);
+    }
+  };
   return (
     <div className="min-h-screen bg-[#F4F6F8]">
       <div className="flex flex-col px-38 pt-48 pb-16 max-w-5xl mx-auto">
@@ -146,7 +198,8 @@ export default function ApplicationPage() {
             <Button
               variant="default"
               className="bg-[#746d6d] hover:bg-[#a09a9a]"
-              onClick={() => alert("下書き保存は未実装です")}
+              onClick={handleDraft}
+              disabled={submitting}
             >
               <img src="/download.png" alt="下書き保存" className="h-4 w-4" />
               下書き保存
