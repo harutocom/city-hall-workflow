@@ -21,7 +21,10 @@ export default function ApplicationPage() {
   // --- State管理 ---
   const [remainingTime, setRemainingTime] = useState<number>(0);
   const [answers, setAnswers] = useState<Record<number, any>>({}); // { sort_order: 値 }
-  const [submitting, setSubmitting] = useState(false);
+  // const [submitting, setSubmitting] = useState(false);
+  const [processStatus, setProcessStatus] = useState<
+    "idle" | "draft" | "submit"
+  >("idle");
   // useStateの行をこれに書き換え
   const [templateElements, setTemplateElements] = useState<
     { id: number; sort_order: number }[]
@@ -64,7 +67,7 @@ export default function ApplicationPage() {
   // --- 3. 送信処理 ---
   const handleSubmit = async () => {
     if (!confirm("申請を送信しますか？")) return;
-    setSubmitting(true);
+    setProcessStatus("submit");
     const loadingToastId = toast.loading("送信しています...");
 
     try {
@@ -111,10 +114,63 @@ export default function ApplicationPage() {
       toast.dismiss(loadingToastId);
       toast.error(`エラー: ${error.message}`);
     } finally {
-      setSubmitting(false);
+      setProcessStatus("idle");
     }
   };
 
+  // --- 4. 下書き保存処理 (新規追加・ロジック内包) ---
+  const handleDraft = async () => {
+    if (!confirm("下書きを保存しますか？")) return;
+    setProcessStatus("draft");
+    const loadingToastId = toast.loading("保存しています...");
+
+    try {
+      // API形式に変換 (handleSubmitと同じ処理)
+      const valuesPayload = Object.entries(answers).map(([key, val]) => {
+        const sortOrder = Number(key);
+        const element = templateElements.find(
+          (el) => el.sort_order === sortOrder
+        );
+        return {
+          elementId: element?.id,
+          sort_order: sortOrder,
+          value: val,
+        };
+      });
+
+      const payload = {
+        template_id: Number(templateId),
+        status: "draft", // ★ここだけ draft に変更
+        values: valuesPayload,
+      };
+
+      const res = await fetch("/api/applications", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        throw new Error(err.message || "下書き保存に失敗しました");
+      }
+
+      // ★成功通知
+      toast.dismiss(loadingToastId);
+      toast.success("下書き保存しました！");
+
+      router.push("/home/application?status=draft"); // 下書き一覧へ遷移
+      router.refresh();
+    } catch (error: any) {
+      console.error(error);
+      // ★エラー通知
+      toast.dismiss(loadingToastId);
+      toast.error(`エラー: ${error.message}`);
+    } finally {
+      setProcessStatus("idle");
+    }
+  };
+  const isProcessing = processStatus !== "idle";
   return (
     <div className="min-h-screen bg-[#F4F6F8]">
       <div className="flex flex-col px-38 pt-48 pb-16 max-w-5xl mx-auto">
@@ -146,20 +202,47 @@ export default function ApplicationPage() {
             <Button
               variant="default"
               className="bg-[#746d6d] hover:bg-[#a09a9a]"
-              onClick={() => alert("下書き保存は未実装です")}
+              onClick={handleDraft}
+              disabled={isProcessing} // ★処理中は押せない
             >
-              <img src="/download.png" alt="下書き保存" className="h-4 w-4" />
-              下書き保存
+              {processStatus === "draft" ? (
+                // ★保存中の表示
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  保存中...
+                </>
+              ) : (
+                // ★通常時の表示
+                <>
+                  <img
+                    src="/download.png"
+                    alt="下書き保存"
+                    className="h-4 w-4"
+                  />
+                  下書き保存
+                </>
+              )}{" "}
             </Button>
 
             <Button
               variant="default"
               className="bg-[#1F6C7E] hover:bg-[#4aa4b9]"
               onClick={handleSubmit}
-              disabled={submitting}
+              disabled={isProcessing} // ★処理中は押せない
             >
-              <img src="/submit.png" alt="送信" className="h-4 w-4" />
-              {submitting ? "送信中..." : "送信"}
+              {processStatus === "submit" ? (
+                // ★送信中の表示
+                <>
+                  <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                  送信中...
+                </>
+              ) : (
+                // ★通常時の表示
+                <>
+                  <img src="/submit.png" alt="送信" className="h-4 w-4" />
+                  送信
+                </>
+              )}{" "}
             </Button>
           </div>
         </div>
