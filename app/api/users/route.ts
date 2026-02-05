@@ -53,7 +53,17 @@ export async function GET(request: NextRequest) {
         id: true,
         name: true,
         department_id: true,
+        departments: {
+          select: {
+            name: true,
+          },
+        },
         role_id: true,
+        roles: {
+          select: {
+            name: true,
+          },
+        },
         created_at: true,
         updated_at: true,
         user_permissions: {
@@ -79,7 +89,7 @@ export async function GET(request: NextRequest) {
 
     return NextResponse.json(
       { message: "usersデータの取得に失敗しました。" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -101,7 +111,7 @@ export async function POST(request: NextRequest) {
     // tokenが無かったらエラーを返す
     return NextResponse.json(
       { message: "ログインされていません。" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -116,7 +126,7 @@ export async function POST(request: NextRequest) {
     console.error(`status:403 ${userId}はユーザー作成の権限がありません`);
     return NextResponse.json(
       { message: "ユーザー作成の権限がありません" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -189,7 +199,7 @@ export async function POST(request: NextRequest) {
             message: issue.message,
           })),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
     // zod以外のエラーの場合は普通にerrorを返す

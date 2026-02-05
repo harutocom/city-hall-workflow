@@ -14,12 +14,16 @@ export interface Users {
   id: number;
   name: string;
   department_id: number;
+  departments: { name: string };
   role_id: number;
+  roles: { name: string };
   permission_id: number;
   created_at: string;
   updated_at: string;
   user_permissions: {
-    permissions: Permission;
+    permissions: {
+      name: string;
+    };
   }[];
 }
 
@@ -105,6 +109,7 @@ export default function TemplateListPage() {
               <th className="py-3 px-6 text-left">氏名</th>
               <th className="py-3 px-6 text-left">部署</th>
               <th className="py-3 px-6 text-left">役割</th>
+              <th className="py-3 px-6 text-left">権限</th>
               <th className="py-3 px-6 text-left"> </th>
             </tr>
           </thead>
@@ -115,8 +120,11 @@ export default function TemplateListPage() {
                 className="border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
               >
                 <td className="py-4 px-6 font-medium">{user.name}</td>
-                <td className="py-4 px-6">{user.department_id}</td>
-                <td className="py-4 px-6">{user.role_id}</td>
+                <td className="py-4 px-6">{user.departments.name}</td>
+                <td className="py-4 px-6">{user.roles.name}</td>
+                <td className="py-4 px-6">
+                  {user.user_permissions[0].permissions.name}
+                </td>
                 <td className="py-4 px-6 text-sm">
                   <button
                     onClick={() => router.push(`/settings/users/${user.id}`)}
@@ -130,7 +138,7 @@ export default function TemplateListPage() {
         </table>
         {users.length === 0 && (
           <div className="p-8 text-center text-gray-500">
-            テンプレートがまだ作成されていません。
+            ユーザーがまだ作成されていません。
           </div>
         )}
       </div>
