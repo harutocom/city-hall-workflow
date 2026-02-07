@@ -25,8 +25,11 @@ export const UserCreateSchema = z.object({
     .min(1, { message: "権限は少なくとも1つ必要です。" }),
 });
 
-export const UserUpdateSchema = UserCreateSchema.partial();
+export const UserUpdateSchema = UserCreateSchema.omit({
+  password: true, // パスワードは更新対象にしない
+}).partial(); // 残りの項目（名前・部署など）を任意にする
 
+export type UserUpdate = z.infer<typeof UserUpdateSchema>;
 // export const UserUpdateSchema = z.object({
 //   name: z.string().min(1).optional(),
 //   email: z.string().email().optional(),
