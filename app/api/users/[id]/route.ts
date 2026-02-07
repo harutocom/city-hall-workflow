@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { UserIdParamSchema, UserUpdateSchema } from "@/schemas/user";
+import { type UserUpdate } from "@/schemas/user";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { z } from "zod";
@@ -10,7 +11,7 @@ import bcrypt from "bcrypt";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   // tokenの情報を取得
   const token = await getToken({
@@ -92,7 +93,7 @@ export async function GET(
     if (!user) {
       return NextResponse.json(
         { message: "指定されたユーザーは見つかりませんでした。" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -111,7 +112,7 @@ export async function GET(
             message: issue.message,
           })),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
     // エラーが起きたらログを表示
@@ -119,7 +120,7 @@ export async function GET(
 
     return NextResponse.json(
       { message: "ユーザーの詳細データ取得に失敗しました。" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -132,7 +133,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   // tokenの情報を取得
   const token = await getToken({
@@ -145,7 +146,7 @@ export async function PATCH(
     // tokenが無かったらエラーを返す
     return NextResponse.json(
       { message: "ログインされていません。" },
-      { status: 401 }
+      { status: 401 },
     );
   }
 
@@ -160,7 +161,7 @@ export async function PATCH(
     console.error(`status:403 ${userId}はユーザー編集の権限がありません`);
     return NextResponse.json(
       { message: "ユーザー編集の権限がありません" },
-      { status: 403 }
+      { status: 403 },
     );
   }
 
@@ -178,15 +179,19 @@ export async function PATCH(
     const validatedBody = UserUpdateSchema.parse(body);
 
     // フロントからのデータを分割代入と型を合わせる(ifを使うとvscodeの型推論が利かなくなるから)
-    const { password, permission_id, ...userData } = validatedBody;
-    const dataToUpdate: Prisma.usersUpdateInput = { ...userData };
-
-    // passwordがnullでなければハッシュ化
-    if (password) {
-      // パスワードをハッシュ化
-      const hashedPassword = await bcrypt.hash(password, 12);
-      dataToUpdate.password_hash = hashedPassword;
-    }
+    const { permissionId, departmentId, roleId, ...userData } = validatedBody;
+    // Prismaに渡すオブジェクトを組み立てる
+    const dataToUpdate: Prisma.usersUpdateInput = {
+      ...userData,
+      // 数字を直接入れるのではなく、connect（紐付け）という命令を送る
+      departments: departmentId ? { connect: { id: departmentId } } : undefined,
+      roles: roleId ? { connect: { id: roleId } } : undefined,
+    };
+    // if (password) {
+    //   // パスワードをハッシュ化
+    //   const hashedPassword = await bcrypt.hash(password, 12);
+    //   dataToUpdate.password_hash = hashedPassword;
+    // }
 
     // トランザクション処理開始
     const user = await db.$transaction(async (tx) => {
@@ -197,7 +202,7 @@ export async function PATCH(
       });
 
       // 権限の更新があれば置き換え
-      if (permission_id) {
+      if (permissionId) {
         await tx.user_permissions.deleteMany({
           where: { user_id: userId },
         });
@@ -205,7 +210,7 @@ export async function PATCH(
         await tx.user_permissions.create({
           data: {
             user_id: userId,
-            permission_id: permission_id,
+            permission_id: permissionId,
           },
         });
       }
@@ -227,7 +232,7 @@ export async function PATCH(
             message: issue.message,
           })),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
     // zod以外のエラーの場合は普通にerrorを返す
@@ -239,7 +244,7 @@ export async function PATCH(
 
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   const { id } = await params;
 
@@ -279,7 +284,7 @@ export async function DELETE(
     if (targetUserId === parseInt(userId, 10)) {
       return NextResponse.json(
         { message: "自分自身のアカウントは無効化できません。" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
@@ -308,7 +313,7 @@ export async function DELETE(
             message: issue.message,
           })),
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
     // エラーが起きたらログを表示
@@ -316,7 +321,7 @@ export async function DELETE(
 
     return NextResponse.json(
       { message: "ユーザーの無効化に失敗しました。" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
