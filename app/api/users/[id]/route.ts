@@ -3,6 +3,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getToken } from "next-auth/jwt";
 import { UserIdParamSchema, UserUpdateSchema } from "@/schemas/user";
+import { type UserUpdate } from "@/schemas/user";
 import { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { z } from "zod";
@@ -178,10 +179,14 @@ export async function PATCH(
     const validatedBody = UserUpdateSchema.parse(body);
 
     // フロントからのデータを分割代入と型を合わせる(ifを使うとvscodeの型推論が利かなくなるから)
-    const { permission_id, ...userData } = validatedBody;
-    const dataToUpdate: Prisma.usersUpdateInput = { ...userData };
-
-    // // passwordがnullでなければハッシュ化
+    const { permissionId, departmentId, roleId, ...userData } = validatedBody;
+    // Prismaに渡すオブジェクトを組み立てる
+    const dataToUpdate: Prisma.usersUpdateInput = {
+      ...userData,
+      // 数字を直接入れるのではなく、connect（紐付け）という命令を送る
+      departments: departmentId ? { connect: { id: departmentId } } : undefined,
+      roles: roleId ? { connect: { id: roleId } } : undefined,
+    };
     // if (password) {
     //   // パスワードをハッシュ化
     //   const hashedPassword = await bcrypt.hash(password, 12);
@@ -197,7 +202,7 @@ export async function PATCH(
       });
 
       // 権限の更新があれば置き換え
-      if (permission_id) {
+      if (permissionId) {
         await tx.user_permissions.deleteMany({
           where: { user_id: userId },
         });
@@ -205,7 +210,7 @@ export async function PATCH(
         await tx.user_permissions.create({
           data: {
             user_id: userId,
-            permission_id: permission_id,
+            permission_id: permissionId,
           },
         });
       }

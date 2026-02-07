@@ -17,9 +17,12 @@ export const UserCreateSchema = z.object({
   password: z
     .string()
     .min(8, { message: "パスワードは8文字以上で設定してください。" }),
-  department_id: z.number().int().positive({ message: "部署IDは必須です。" }),
-  role_id: z.number().int().positive({ message: "役職IDは必須です。" }),
-  permission_id: z
+  departmentId: z.coerce
+    .number()
+    .int()
+    .positive({ message: "部署IDは必須です。" }),
+  roleId: z.coerce.number().int().positive({ message: "役職IDは必須です。" }),
+  permissionId: z.coerce
     .number()
     .int()
     .min(1, { message: "権限は少なくとも1つ必要です。" }),
