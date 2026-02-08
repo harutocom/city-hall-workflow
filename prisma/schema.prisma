@@ -27,20 +27,48 @@ model application_templates {
   created_by        Int?
   created_at        DateTime            @default(now()) @db.Timestamp(6)
   updated_at        DateTime            @default(now()) @db.Timestamp(6)
+  deleted_at        DateTime?
+  auto_deduct_leave Boolean @default(false)
   users             users?              @relation(fields: [created_by], references: [id], onDelete: NoAction, onUpdate: NoAction)
   applications      applications[]
   template_elements template_elements[]
+  // このテンプレートの承認ルート定義
+  approval_routes  template_approval_routes[]
+}
+
+// ★新規: 承認ルート定義（テンプレート作成時に設定）
+model template_approval_routes {
+  id               Int      @id @default(autoincrement())
+  template_id      Int
+  step_order       Int      // 1, 2, 3...
+  
+  // Pilot版は approver_user_id を使用。将来は role_id を使用。
+  approver_user_id Int?     
+  approver_role_id Int?
+
+  created_at       DateTime @default(now()) @db.Timestamp(6)
+  updated_at       DateTime @default(now()) @db.Timestamp(6)
+
+  application_templates application_templates @relation(fields: [template_id], references: [id], onDelete: Cascade)
+  users                 users?                @relation(fields: [approver_user_id], references: [id])
+  roles                 roles?                @relation(fields: [approver_role_id], references: [id])
+
+  @@unique([template_id, step_order])
 }
 
 model application_values {
   id                Int               @id @default(autoincrement())
   application_id    Int
-  field_id          Int
-  value             String?
+  template_element_id Int
+  sort_order     Int  
+  value_text     String?   @db.Text
+  value_number   Int?
+  value_datetime DateTime? @db.Timestamp(6)
+  value_boolean  Boolean?
   created_at        DateTime          @default(now()) @db.Timestamp(6)
   updated_at        DateTime          @default(now()) @db.Timestamp(6)
   applications      applications      @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  template_elements template_elements @relation(fields: [field_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  template_elements   template_elements @relation(fields: [template_element_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
 }
 
 model applications {
@@ -48,26 +76,52 @@ model applications {
   applicant_id            Int
   template_id             Int
   status                  String                    @db.VarChar(50)
+  // ★追加: 現在の進行状況 (1, 2, 3...)
+  current_step            Int      @default(1)
   submitted_at            DateTime?                 @db.Timestamp(6)
   completed_at            DateTime?                 @db.Timestamp(6)
   created_at              DateTime                  @default(now()) @db.Timestamp(6)
   updated_at              DateTime                  @default(now()) @db.Timestamp(6)
+  deleted_at              DateTime?
   application_attachments application_attachments[]
   application_values      application_values[]
+  // ★追加: 申請ごとの承認ステップ実体
+  approval_steps          application_approval_steps[]
   users                   users                     @relation(fields: [applicant_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   application_templates   application_templates     @relation(fields: [template_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  approval_flows          approval_flows[]
+  approval_logs           approval_logs[]
 }
 
-model approval_flows {
+// ★新規: 承認ステップ実体（申請時にルート定義からコピーされる）
+model application_approval_steps {
+  id              Int          @id @default(autoincrement())
+  application_id  Int
+  step_order      Int          // 1, 2, 3...
+  
+  approver_id     Int          // 実際に承認すべきユーザー
+  status          String       @default("PENDING") @db.VarChar(20) // PENDING, APPROVED, REMANDED
+  
+  acted_at        DateTime?    @db.Timestamp(6)
+  comment         String?      @db.Text
+
+  created_at      DateTime     @default(now()) @db.Timestamp(6)
+  updated_at      DateTime     @default(now()) @db.Timestamp(6)
+
+  applications    applications @relation(fields: [application_id], references: [id], onDelete: Cascade)
+  users           users        @relation(fields: [approver_id], references: [id], onDelete: NoAction)
+
+  @@unique([application_id, step_order])
+}
+
+model approval_logs {
   id             Int          @id @default(autoincrement())
   application_id Int
   approver_id    Int
   action         String       @db.VarChar(50)
   comment        String?
   acted_at       DateTime     @default(now()) @db.Timestamp(6)
-  applications   applications @relation(fields: [application_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
-  users          users        @relation(fields: [approver_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  applications   applications @relation(fields: [application_id], references: [id], onDelete: NoAction)
+  users          users        @relation(fields: [approver_id], references: [id], onDelete: NoAction)
 }
 
 model departments {
@@ -93,6 +147,8 @@ model roles {
   id    Int     @id @default(autoincrement())
   name  String  @unique @db.VarChar(255)
   users users[]
+  // ★追加: このロールが割り当てられた承認ルート定義
+  template_approval_routes template_approval_routes[]
 }
 
 model template_elements {
@@ -102,8 +158,8 @@ model template_elements {
   sort_order            Int
   props                 Json                  @default("{}")
   data_type             String?
-  application_values    application_values[]
   application_templates application_templates @relation(fields: [template_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
+  application_values application_values[]
 }
 
 model user_permissions {
@@ -126,10 +182,14 @@ model users {
   remaining_leave_hours   Decimal                   @default(0) @db.Decimal
   created_at              DateTime                  @default(now()) @db.Timestamp(6)
   updated_at              DateTime                  @default(now()) @db.Timestamp(6)
+  deleted_at              DateTime?                 @db.Timestamp(6)
+  // ★追加: 承認関連のリレーション
+  template_approval_routes   template_approval_routes[]
+  application_approval_steps application_approval_steps[]
   application_attachments application_attachments[]
   application_templates   application_templates[]
   applications            applications[]
-  approval_flows          approval_flows[]
+  approval_logs           approval_logs[]
   user_permissions        user_permissions[]
   departments             departments?              @relation(fields: [department_id], references: [id], onDelete: NoAction, onUpdate: NoAction)
   roles                   roles?                    @relation(fields: [role_id], references: [id], onDelete: NoAction, onUpdate: NoAction)

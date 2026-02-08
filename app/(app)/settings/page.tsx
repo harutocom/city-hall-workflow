@@ -1,4 +1,5 @@
 import React from "react";
+import Link from "next/link";
 
 export default function Setup() {
   return (
@@ -39,14 +40,20 @@ export default function Setup() {
         <div className="bg-[#1F6C7E] text-white text-xl font-bold px-8 py-4 ">
           管理者権限
         </div>
-        <button className="flex items-center gap-2 justify-between text-black font-bold bg-white shadow-md border border-[#1F6C7E] p-6 hover:bg-[#DDDDDD]">
+        <Link
+          href="/settings/users"
+          className="flex items-center gap-2 justify-between text-black font-bold bg-white shadow-md border border-[#1F6C7E] p-6 hover:bg-[#DDDDDD]"
+        >
           <span>ユーザー一覧</span>
           <img src="/Next.png" alt="Next" className="w-4 h-4" />
-        </button>
-        <button className="flex items-center gap-2 justify-between text-black font-bold bg-white shadow-md border border-[#1F6C7E] p-6 hover:bg-[#DDDDDD]">
+        </Link>
+        <Link
+          href="/settings/templates"
+          className="flex items-center gap-2 justify-between text-black font-bold bg-white shadow-md border border-[#1F6C7E] p-6 hover:bg-[#DDDDDD]"
+        >
           <span>テンプレート一覧</span>
           <img src="/Next.png" alt="Next" className="w-4 h-4" />
-        </button>
+        </Link>
       </div>
     </div>
   );

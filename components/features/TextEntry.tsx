@@ -2,12 +2,30 @@
 
 import { ComponentProps } from "@/types/template";
 
+<<<<<<< HEAD
+=======
+// ★詳細画面用のPropsを追加
+type ExtendedProps = ComponentProps & {
+  value?: string | number; // APIから来る値
+  disabled?: boolean; // 編集不可フラグ
+  onChange?: (e: React.ChangeEvent<HTMLInputElement>) => void;
+};
+
+>>>>>>> 4473c1e1a20e1c93afc5a60dc8769c7f3a60bfd3
 export default function TextEntry({
   label,
   placeholder,
   isRequired,
   options,
+<<<<<<< HEAD
 }: ComponentProps) {
+=======
+  // ★これらを受け取る
+  value,
+  disabled,
+  onChange,
+}: ExtendedProps) {
+>>>>>>> 4473c1e1a20e1c93afc5a60dc8769c7f3a60bfd3
   return (
     <div className="flex flex-col w-[640px] text-black rounded-[8px] gap-[8px] p-[16px] focus:ring-2">
       <label className="font-bold">
@@ -17,7 +35,18 @@ export default function TextEntry({
       <input
         type="text"
         placeholder={placeholder}
+<<<<<<< HEAD
         className="w-[560px] h-[40px]"
+=======
+        // ★スタイル調整: 枠線を追加し、disabled時の見た目を設定
+        className="w-[560px] h-[40px] border border-gray-300 rounded-md px-2 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-600 disabled:cursor-not-allowed"
+        // ★ここが重要！値があればそれを表示する
+        value={value !== undefined && value !== null ? String(value) : ""}
+        // ★編集不可にする
+        disabled={disabled}
+        readOnly={disabled}
+        onChange={onChange}
+>>>>>>> 4473c1e1a20e1c93afc5a60dc8769c7f3a60bfd3
       ></input>
     </div>
   );

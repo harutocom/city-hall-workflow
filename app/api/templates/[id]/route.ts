@@ -6,17 +6,35 @@ import { TemplateIdParamSchema } from "@/schemas/template";
 import { getToken } from "next-auth/jwt";
 import { TemplateSchema } from "@/schemas/template";
 
-// 個々のテンプレ詳細を取得
+/**
+ * テンプレートの詳細を取得するAPI
+ * * @auth 必須
+ * @method GET
+ * @param request NextRequest
+ * @param param1 context.params.id 選択されたテンプレートID
+ * @returns {Promise<NextResponse>} テンプレートの詳細データのJSON
+ */
 export async function GET(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
+    // 1. トークンを取得し認証
+    const token = await getToken({
+      req: request,
+      secret: process.env.NEXTAUTH_SECRET,
+    });
+    if (!token) {
+      return NextResponse.json({ message: "Unauthorized" }, { status: 401 });
+    }
+
+    // 2. パラメータからテンプレートIDを取得
     const { id } = await params;
     // 取得したparamsをzodスキーマを使い検証し、変換する
     const { id: templateId } = TemplateIdParamSchema.parse({ id });
 
-    // テンプレートとその詳細をapplication_templatesとtemplate_elementsから取得
+    // 3. テンプレートの詳細をDBから取得
+    // application_templatesとtemplate_elementsから取得
     const template = await db.application_templates.findUnique({
       where: {
         id: templateId,
@@ -43,7 +61,7 @@ export async function GET(
       },
     });
 
-    // テンプレートのデータが無かった場合
+    // テンプレートのデータが無かった場合のエラー処理
     if (!template) {
       return NextResponse.json(
         { message: "指定されたテンプレートは見つかりませんでした。" },
@@ -52,7 +70,7 @@ export async function GET(
     }
 
     // 取得結果を返す
-    return NextResponse.json({ template });
+    return NextResponse.json(template);
   } catch (error) {
     if (error instanceof z.ZodError) {
       // zodエラーの場合どこの入力でエラーかを返す
@@ -72,12 +90,20 @@ export async function GET(
     console.error(error);
 
     return NextResponse.json(
-      { message: "テンプレートの詳細データの取得に失敗しました。" },
+      { message: "テンプレートの詳細データ取得に失敗しました。" },
       { status: 500 }
     );
   }
 }
 
+/**
+ * テンプレートを編集するAPI
+ * * @auth 必須 テンプレート編集権限(権限ID:1)
+ * @method PUT
+ * @param request NextRequest
+ * @param param1 context.params.id 選択されたテンプレートID
+ * @returns 成功メッセージとステータスコード
+ */
 export async function PUT(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
@@ -85,26 +111,22 @@ export async function PUT(
   const { id } = await params;
 
   try {
-    // テンプレートIDをパラメーターから取得
-    const { id: templateId } = TemplateIdParamSchema.parse({ id });
-
-    // tokenを取得
+    // 1. トークンを取得し認証
     const token = await getToken({
       req: request,
       secret: process.env.NEXTAUTH_SECRET,
     });
-
-    // tokenがあるか(ログイン中かどうか)を確認
     if (!token) {
-      // tokenが無かったらエラーを返す
       return NextResponse.json({
         message: "ログインされていません。",
         status: 401,
       });
     }
-    // 取得したtokenから必要な情報を変数へ代入
+
+    // 2. トークンとIDを取得し認証
+    const { id: templateId } = TemplateIdParamSchema.parse({ id });
     const userId = token.id;
-    const userPermissions = token.permission_ids; // userの権限の配列
+    const userPermissions = token.permission_ids;
     const targetPermission = 1; // テンプレート作成に必要な権限ID
 
     //userに権限があるかを確認
@@ -117,16 +139,14 @@ export async function PUT(
       });
     }
 
-    // フロントに入力されたデータを取得
+    // 3. フロントからデータを取得し検証
     const data = await request.json();
-
     // zodスキーマでデータをバリデーションし型を変換する。
     const validatedData = TemplateSchema.parse(data);
-
     // データを分割代入
     const { name, description, elements } = validatedData;
 
-    // DBに矛盾が生じないようにトランザクション処理を開始
+    // 4. DBに矛盾が生じないようにトランザクション処理を開始
     await db.$transaction(async (tx) => {
       // 親テーブルのapplication_templatesを部分更新
       const updatedTmeplates = await tx.application_templates.update({
@@ -227,19 +247,12 @@ export async function DELETE(
       });
     }
 
-    await db.$transaction(async (tx) => {
-      // templateIdのデータをtemplate_elementsテーブルから削除
-      await tx.template_elements.deleteMany({
-        where: { template_id: templateId },
-      });
-
-      // templateIdのデータをapplication_templatesテーブルから削除
-      await tx.application_templates.delete({
-        where: { id: templateId },
-      });
-
-      // 削除なので何も返さない
-      return;
+    // 物理削除 (delete) ではなく、deleted_at に日時を入れる (update)
+    const deletedTemplate = await db.application_templates.update({
+      where: { id: templateId },
+      data: {
+        deleted_at: new Date(), // 現在日時を記録＝削除扱い
+      },
     });
 
     // 返すものが無いのでメッセージと204 No Contentを返す

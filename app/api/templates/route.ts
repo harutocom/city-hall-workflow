@@ -6,10 +6,19 @@ import { z } from "zod";
 import { TemplateSchema } from "@/schemas/template";
 
 // templatesテーブルから一覧を取得する
+/**
+ * テンプレート一覧を取得するAPI
+ *  * @auth 必須
+ * @method GET
+ * @returns {Promise<NextResponse>} テンプレート一覧のJSON配列
+ */
 export async function GET() {
   try {
     // 必要な情報を取得
     const templates = await db.application_templates.findMany({
+      where: {
+        deleted_at: null,
+      },
       select: {
         id: true,
         name: true,
@@ -41,6 +50,13 @@ export async function GET() {
   }
 }
 
+/**
+ * テンプレートを作成するAPI
+ * * @auth 必須 テンプレート作成権限
+ * @method POST
+ * @param request NextRequest
+ * @returns 成功メッセージとステータスコード
+ */
 export async function POST(request: NextRequest) {
   try {
     // tokenの情報を取得
@@ -77,24 +93,26 @@ export async function POST(request: NextRequest) {
     // フロントのデータが正しいかzodを使い検証し、型を変換する
     const validatedData = TemplateSchema.parse(data);
     // validatedDataから各値を分割代入で取り出す
-    const { name, description, elements } = validatedData;
+    const { name, description, elements, approval_routes, auto_deduct_leave } =
+      validatedData;
     // テンプレ作成者のIDもtokenから取得
     const createdById = token.id;
 
     // DBに矛盾が生じないようにトランザクション処理を開始
     await db.$transaction(async (tx) => {
       // 親テーブルのapplication_templatesにデータを作成
-      const newTemplates = await tx.application_templates.create({
+      const newTemplate = await tx.application_templates.create({
         data: {
           name: name,
           description: description,
           created_by: parseInt(createdById, 10),
+          auto_deduct_leave: auto_deduct_leave ?? false,
         },
       });
 
       // テンプレに必要な複数のフロントからのデータを配列として持っておく
       const elementsToCreate = elements.map((element) => ({
-        template_id: newTemplates.id,
+        template_id: newTemplate.id,
         component_name: element.component_name,
         sort_order: element.sort_order,
         props: element.props,
@@ -106,7 +124,19 @@ export async function POST(request: NextRequest) {
         data: elementsToCreate,
       });
 
-      return newTemplates;
+      if (approval_routes && approval_routes.length > 0) {
+        const routesToCreate = approval_routes.map((route) => ({
+          template_id: newTemplate.id,
+          step_order: route.step_order,
+          approver_user_id: route.approver_user_id,
+        }));
+
+        await tx.template_approval_routes.createMany({
+          data: routesToCreate,
+        });
+      }
+
+      return newTemplate;
     });
 
     // テンプレート追加処理成功時のレスポンス

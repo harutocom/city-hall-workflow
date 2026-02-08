@@ -9,10 +9,18 @@ export const TemplateElementSchema = z.object({
   data_type: z.string().optional(),
 });
 
+// ★追加: 承認ルートのスキーマ
+const ApprovalRouteSchema = z.object({
+  step_order: z.number().int().min(1),
+  approver_user_id: z.number().int(), // 今回はUser直接指定
+});
+
 export const TemplateSchema = z.object({
   name: z.string().min(1, { message: "テンプレート名は必須です。" }),
   description: z.string().nullable().optional(),
   elements: z.array(TemplateElementSchema).min(1),
+  approval_routes: z.array(ApprovalRouteSchema).optional(),
+  auto_deduct_leave: z.boolean().default(false),
 });
 
 export const TemplateIdParamSchema = z.object({

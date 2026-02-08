@@ -1,15 +1,15 @@
-import Image from "next/image";
+// /app
+import { redirect } from "next/navigation";
+import { getServerSession } from "next-auth";
+// authOptionsのパスはご自身の環境に合わせてください
+import { authOptions } from "@/lib/nextauth";
 
-export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <h1>市役所 申請・承認システム</h1>
-        <p>
-          このシステムは、市役所の申請および承認プロセスを効率化するために設計されています。
-        </p>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center"></footer>
-    </div>
-  );
+export default async function RootPage() {
+  const session = await getServerSession(authOptions);
+
+  if (session) {
+    redirect("/home");
+  } else {
+    redirect("/login");
+  }
 }
