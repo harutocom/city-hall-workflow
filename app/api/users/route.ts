@@ -138,7 +138,7 @@ export async function POST(request: NextRequest) {
     const validatedBody = UserCreateSchema.parse(body);
 
     // 分割代入でデータを取り出す
-    const { email, name, password, department_id, role_id, permission_id } =
+    const { email, name, password, departmentId, roleId, permissionId } =
       validatedBody;
 
     // 同じメールアドレスのuserが存在するかチェック
@@ -167,8 +167,8 @@ export async function POST(request: NextRequest) {
           email,
           name,
           password_hash: hashedPassword,
-          department_id: department_id, // スキーマに合わせてIDを直接渡す
-          role_id: role_id, // スキーマに合わせてIDを直接渡す
+          department_id: departmentId, // スキーマに合わせてIDを直接渡す
+          role_id: roleId, // スキーマに合わせてIDを直接渡す
         },
       });
 
@@ -177,7 +177,7 @@ export async function POST(request: NextRequest) {
       await tx.user_permissions.create({
         data: {
           user_id: createdUser.id,
-          permission_id: permission_id, // MVPの単一ID
+          permission_id: permissionId, // MVPの単一ID
         },
       });
 
