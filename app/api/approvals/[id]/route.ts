@@ -14,7 +14,7 @@ import { z } from "zod";
  */
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 1. トークンを取得し認証
@@ -77,7 +77,7 @@ export async function GET(
     if (!approval || approval.approver_id !== userId) {
       return NextResponse.json(
         { message: "承認データが見つからないか、権限がありません。" },
-        { status: 404 }
+        { status: 404 },
       );
     }
 
@@ -86,7 +86,7 @@ export async function GET(
     console.error("Approval Detail Error:", error);
     return NextResponse.json(
       { message: "承認詳細の取得に失敗しました。" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
@@ -101,7 +101,7 @@ export async function GET(
  */
 export async function PATCH(
   request: NextRequest,
-  { params }: { params: Promise<{ id: string }> }
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
     // 1. トークンを取得し認証
@@ -253,7 +253,7 @@ export async function PATCH(
         ) {
           // 期間入力(DateRange)の値を探す ("~" が含まれていれば期間とみなす)
           const rangeValue = appData.application_values.find(
-            (v) => v.value_text && v.value_text.includes("~")
+            (v) => v.value_text && v.value_text.includes("~"),
           );
 
           if (rangeValue && rangeValue.value_text) {
@@ -261,18 +261,44 @@ export async function PATCH(
             const [startStr, endStr] = rangeValue.value_text.split("~");
 
             if (startStr && endStr) {
+              let hoursToDeduct = 0;
+
+              // ★修正ポイント: ":" が含まれているかで「時間単位」か「日単位」かを判定
+              const isTimeBased = startStr.includes(":");
               const startDate = new Date(startStr);
               const endDate = new Date(endStr);
+              if (isTimeBased) {
+                //Pattern A: 時間単位の計算 (分単位で計算して時間換算)
 
-              // 日数計算: (差分ミリ秒 / 1日のミリ秒) + 1日(当日分)
-              const diffTime = Math.abs(
-                endDate.getTime() - startDate.getTime()
-              );
-              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+                // 差分（ミリ秒）を取得
+                let diffMs = endDate.getTime() - startDate.getTime();
 
-              // 時間計算: 日数 × 7.75時間 (一旦定時で計算)
-              const hoursPerDay = 7.75;
-              const hoursToDeduct = diffDays * hoursPerDay;
+                // 休憩時間 (12:00-13:00) の控除ロジック
+                // 同一日で、かつ 12:00 をまたぐ場合のみ 1時間(3600000ms) 引く
+                const startHour = startDate.getHours();
+                const endHour = endDate.getHours();
+
+                // 簡易判定: 12時以前に開始し、13時以降に終了している場合は休憩を引く
+                // (例: 11:00開始 - 14:00終了 = 3時間 - 1時間休憩 = 2時間)
+                if (startHour < 12 && endHour >= 13) {
+                  diffMs -= 60 * 60 * 1000; // -1時間
+                }
+
+                // 分に変換してから時間に換算 (例: 90分 -> 1.5時間)
+                const diffMinutes = Math.max(0, diffMs / (1000 * 60));
+                hoursToDeduct = diffMinutes / 60;
+              } else {
+                // 日数計算: (差分ミリ秒 / 1日のミリ秒) + 1日(当日分)
+                const diffTime = Math.abs(
+                  endDate.getTime() - startDate.getTime(),
+                );
+                const diffDays =
+                  Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+
+                // 時間計算: 日数 × 7.75時間 (一旦定時で計算)
+                const hoursPerDay = 7.75;
+                hoursToDeduct = diffDays * hoursPerDay;
+              }
 
               // 4. 減算実行
               await tx.users.update({
@@ -290,7 +316,7 @@ export async function PATCH(
         // タイムアウトしないように待ち時間を編集
         maxWait: 5000, // トランザクション開始待ち (5秒)
         timeout: 10000, // 実行時間リミット (10秒に延長)
-      }
+      },
     );
 
     return NextResponse.json(result);
@@ -302,26 +328,26 @@ export async function PATCH(
       if (error.message === "FORBIDDEN") {
         return NextResponse.json(
           { message: "権限がありません。" },
-          { status: 403 }
+          { status: 403 },
         );
       }
       if (error.message === "ALREADY_PROCESSED") {
         return NextResponse.json(
           { message: "既に処理済みの申請です。" },
-          { status: 409 }
+          { status: 409 },
         );
       }
     }
     if (error instanceof z.ZodError) {
       return NextResponse.json(
         { message: "入力値が不正です。" },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
     return NextResponse.json(
       { message: "承認処理に失敗しました。" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }
