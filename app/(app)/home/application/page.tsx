@@ -176,7 +176,7 @@ export default function MyApplicationsPage() {
                       {/* 今回は自分の申請詳細APIを作っていないので、一旦仮リンクか、承認詳細と同じ画面へ */}
                       <Link
                         href={`/home/application/${app.id}`}
-                        className="text-blue-500 hover:underline font-bold"
+                        className="text-blue-500 hover:underline font-bold cursor-pointer"
                       >
                         詳細
                       </Link>

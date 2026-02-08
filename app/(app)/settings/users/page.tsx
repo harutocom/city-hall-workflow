@@ -115,10 +115,7 @@ export default function TemplateListPage() {
           </thead>
           <tbody className="text-gray-700">
             {users.map((user) => (
-              <tr
-                key={user.id}
-                className="border-b border-gray-200 hover:bg-gray-100 cursor-pointer"
-              >
+              <tr key={user.id} className="border-b border-gray-200">
                 <td className="py-4 px-6 font-medium">{user.name}</td>
                 <td className="py-4 px-6">{user.departments.name}</td>
                 <td className="py-4 px-6">{user.roles.name}</td>
@@ -127,6 +124,7 @@ export default function TemplateListPage() {
                 </td>
                 <td className="py-4 px-6 text-sm">
                   <button
+                    className="text-blue-500 hover:underline font-bold cursor-pointer"
                     onClick={() => router.push(`/settings/users/${user.id}`)}
                   >
                     編集
