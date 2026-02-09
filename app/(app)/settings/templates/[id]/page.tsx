@@ -74,14 +74,16 @@ export default function TemplateDetailPage() {
     if (!id) return;
 
     const fetchTemplate = async () => {
+      console.log(1);
       try {
         setIsLoading(true);
         const response = await fetch(`/api/templates/${id}`);
         if (!response.ok) {
           throw new Error("テンプレートの取得に失敗しました。");
         }
-        const data = await response.json();
-        setTemplate(data.template);
+        const { data } = await response.json();
+        console.log(data);
+        setTemplate(data);
       } catch (err) {
         setError(
           err instanceof Error ? err.message : "不明なエラーが発生しました。",
