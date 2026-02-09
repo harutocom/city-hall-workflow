@@ -15,6 +15,7 @@ import { FormComponent } from "@/types/template";
 import Check from "@/components/features/Check";
 import DateInput from "@/components/features/DateInput";
 import DateRange from "@/components/features/DateRange";
+import DateTimeRange from "@/components/features/DateTimeRange";
 import Radio from "@/components/features/Radio";
 import Select from "@/components/features/Select";
 import TextArea from "@/components/features/TextArea";
@@ -46,6 +47,9 @@ const renderComponentPreview = (component: FormComponent) => {
       return <DateInput {...props} />;
     case "date_range":
       return <DateRange {...props} />;
+    case "date_time_range":
+      return <DateTimeRange {...props} />;
+
     default:
       return (
         <div className="text-red-500">
@@ -70,17 +74,19 @@ export default function TemplateDetailPage() {
     if (!id) return;
 
     const fetchTemplate = async () => {
+      console.log(1);
       try {
         setIsLoading(true);
         const response = await fetch(`/api/templates/${id}`);
         if (!response.ok) {
           throw new Error("テンプレートの取得に失敗しました。");
         }
-        const data = await response.json();
-        setTemplate(data.template);
+        const { data } = await response.json();
+        console.log(data);
+        setTemplate(data);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "不明なエラーが発生しました。"
+          err instanceof Error ? err.message : "不明なエラーが発生しました。",
         );
       } finally {
         setIsLoading(false);
@@ -113,7 +119,7 @@ export default function TemplateDetailPage() {
     } catch (err) {
       toast.dismiss();
       toast.error(
-        err instanceof Error ? err.message : "不明なエラーが発生しました。"
+        err instanceof Error ? err.message : "不明なエラーが発生しました。",
       );
     }
   };

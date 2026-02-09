@@ -6,6 +6,7 @@ import { FormComponent } from "@/types/template"; // 型定義は適宜合わせ
 import Check from "../Check";
 import DateInput from "../DateInput";
 import DateRange from "../DateRange";
+import DateTimeRange from "../DateTimeRange";
 import Radio from "../Radio";
 import Select from "../Select";
 import TextArea from "../TextArea";
@@ -105,6 +106,8 @@ export default function ApplicationDetailViewer({
         return <DateInput {...commonProps} value={safeValue} />;
       case "date_range":
         return <DateRange {...commonProps} value={safeValue} />;
+      case "date_time_range":
+        return <DateTimeRange {...commonProps} value={safeValue} />;
       default:
         return <div className="text-gray-400">-</div>;
     }
