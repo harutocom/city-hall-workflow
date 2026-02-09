@@ -14,7 +14,8 @@ import { FormComponent } from "@/types/template";
 // --- プレビューコンポーネントをインポート ---
 import Check from "@/components/features/Check";
 import DateInput from "@/components/features/DateInput";
-import DateRange from "@/components/features/DateTimeRange";
+import DateRange from "@/components/features/DateRange";
+import DateTimeRange from "@/components/features/DateTimeRange";
 import Radio from "@/components/features/Radio";
 import Select from "@/components/features/Select";
 import TextArea from "@/components/features/TextArea";
@@ -46,6 +47,9 @@ const renderComponentPreview = (component: FormComponent) => {
       return <DateInput {...props} />;
     case "date_range":
       return <DateRange {...props} />;
+    case "date_time_range":
+      return <DateTimeRange {...props} />;
+
     default:
       return (
         <div className="text-red-500">
