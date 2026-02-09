@@ -37,7 +37,7 @@ export const authOptions: NextAuthOptions = {
         // bcryptを使って、入力されたパスワードと、DBのハッシュ化済みパスワードを比較
         const isPasswordCorrect = await bcrypt.compare(
           credentials.password,
-          user.password_hash
+          user.password_hash,
         );
 
         // パスワードが一致しなかった場合、認証失敗
@@ -71,6 +71,8 @@ export const authOptions: NextAuthOptions = {
   // ログイン状態をどう管理するか
   session: {
     strategy: "jwt",
+    // 30秒でセッション切れにする
+    maxAge: 12 * 60 * 60,
   },
   // JWTやセッションに、カスタム情報を追加するための設定
   callbacks: {
