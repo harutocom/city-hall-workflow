@@ -14,7 +14,7 @@ import { FormComponent } from "@/types/template";
 // --- プレビューコンポーネントをインポート ---
 import Check from "@/components/features/Check";
 import DateInput from "@/components/features/DateInput";
-import DateRange from "@/components/features/DateRange";
+import DateRange from "@/components/features/DateTimeRange";
 import Radio from "@/components/features/Radio";
 import Select from "@/components/features/Select";
 import TextArea from "@/components/features/TextArea";
@@ -80,7 +80,7 @@ export default function TemplateDetailPage() {
         setTemplate(data.template);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "不明なエラーが発生しました。"
+          err instanceof Error ? err.message : "不明なエラーが発生しました。",
         );
       } finally {
         setIsLoading(false);
@@ -113,7 +113,7 @@ export default function TemplateDetailPage() {
     } catch (err) {
       toast.dismiss();
       toast.error(
-        err instanceof Error ? err.message : "不明なエラーが発生しました。"
+        err instanceof Error ? err.message : "不明なエラーが発生しました。",
       );
     }
   };

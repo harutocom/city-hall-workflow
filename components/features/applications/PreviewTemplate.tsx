@@ -11,6 +11,7 @@ import Radio from "../Radio";
 import TextArea from "../TextArea";
 import DateInput from "../DateInput";
 import DateRange from "../DateRange";
+import DateTimeRange from "../DateTimeRange";
 
 interface TemplateDetail {
   id: number;
@@ -59,7 +60,7 @@ export default function PreviewTemplate({
 
   // --- コンポーネントレンダリング関数 (入力対応版) ---
   const renderInputComponent = (
-    component: FormComponent & { sort_order: number }
+    component: FormComponent & { sort_order: number },
   ) => {
     const commonProps = {
       ...component.props,
@@ -91,6 +92,9 @@ export default function PreviewTemplate({
         return <DateInput {...commonProps} />;
       case "date_range":
         return <DateRange {...commonProps} />;
+      case "date_time_range":
+        return <DateTimeRange {...commonProps} />;
+
       default:
         return (
           <p className="text-red-500">未対応: {component.component_name}</p>

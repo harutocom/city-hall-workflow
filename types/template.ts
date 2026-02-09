@@ -26,6 +26,7 @@ const FormComponentSchema = z.object({
     "checkbox",
     "date",
     "date_range",
+    "date_time_range",
   ]),
   props: ComponentPropsSchema,
 });

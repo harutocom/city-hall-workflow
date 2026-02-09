@@ -50,6 +50,11 @@ const PALETTE_ITEMS: PaletteItem[] = [
     label: "日付範囲選択",
     description: "日付範囲の選択",
   },
+  {
+    type: "date_time_range",
+    label: "日時範囲選択",
+    description: "日時範囲の選択",
+  },
 ];
 
 /**

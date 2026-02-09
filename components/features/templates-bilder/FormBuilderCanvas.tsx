@@ -5,6 +5,7 @@ import { FormComponent } from "@/types/template";
 import Check from "../Check";
 import DateInput from "../DateInput";
 import DateRange from "../DateRange";
+import DateTimeRange from "../DateTimeRange";
 import Radio from "../Radio";
 import Select from "../Select";
 import TextArea from "../TextArea";
@@ -52,6 +53,8 @@ export default function FormBuilderCanvas({
         return <DateInput {...props} />;
       case "date_range":
         return <DateRange {...props} />;
+      case "date_time_range":
+        return <DateTimeRange {...props} />;
       default:
         // 万が一、未対応の部品が来た場合の表示
         return (
