@@ -4,6 +4,8 @@
 "use client";
 import Image from "next/image";
 import { useState } from "react";
+import { useRouter } from "next/navigation";
+import toast, { Toaster } from "react-hot-toast";
 
 const departments = [
   { id: 1, name: "DX推進課" },
@@ -17,6 +19,7 @@ const roles = [
 ];
 
 export default function Signup() {
+  const router = useRouter();
   // stateの管理
   const [error, setError] = useState<string | null>(null);
   const [name, setName] = useState("");
@@ -56,6 +59,8 @@ export default function Signup() {
       }
 
       // 成功時の処理
+      toast.success("ユーザーが作成されました。");
+      router.push("/settings/users");
     } catch (error) {
       console.error("Signup error:", error);
       setError("Internal server error");
