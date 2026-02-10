@@ -1,7 +1,10 @@
+"use client";
 import React from "react";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 export default function Setup() {
+  const { data: session } = useSession();
   return (
     <div className="min-h-screen bg-[#F4F6F8] flex flex-col justify-center px-38 pt-48 pb-16">
       <div className="w-full flex flex-col">
@@ -14,11 +17,15 @@ export default function Setup() {
           <div className="grid grid-cols-2 gap-y-4">
             <div className="border border-[#1F6C7E]">
               <p className="font-semibold text-sm">部署</p>
-              <p className="font-semibold text-center mb-6">人事部</p>
+              <p className="font-semibold text-center mb-6">
+                {session?.user?.department_name || "---"}
+              </p>
             </div>
             <div className="border border-[#1F6C7E]">
               <p className="font-semibold text-sm">役職</p>
-              <p className="font-semibold text-center mb-6">マネージャー</p>
+              <p className="font-semibold text-center mb-6">
+                {session?.user?.role_name || "---"}
+              </p>
             </div>
           </div>
         </div>
