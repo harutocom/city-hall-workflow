@@ -52,10 +52,10 @@ export default function TemplateListPage() {
         }
 
         const data = await response.json();
-        setTemplates(data.templates);
+        setTemplates(data);
       } catch (err) {
         setError(
-          err instanceof Error ? err.message : "不明なエラーが発生しました。"
+          err instanceof Error ? err.message : "不明なエラーが発生しました。",
         );
       } finally {
         setIsLoading(false);

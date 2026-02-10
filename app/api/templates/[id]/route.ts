@@ -70,7 +70,7 @@ export async function GET(
     }
 
     // 取得結果を返す
-    return NextResponse.json({ data: template });
+    return NextResponse.json(template);
   } catch (error) {
     if (error instanceof z.ZodError) {
       // zodエラーの場合どこの入力でエラーかを返す
