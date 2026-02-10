@@ -80,7 +80,7 @@ export default function TemplateListPage() {
         <h1 className="text-3xl font-bold border-l-4 border-[#008080] pl-4">
           ユーザー一覧
         </h1>
-        <Link href="/signup">
+        <Link href="users/signup">
           <button className="flex items-center gap-2 px-6 py-3 bg-[#008080] text-white font-semibold rounded-lg shadow-md hover:bg-[#006666] transition-colors">
             {/* ここにアイコンを挿入できます (例: <PencilIcon />) */}
             <svg

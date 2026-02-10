@@ -48,7 +48,7 @@ export default function PreviewTemplate({
         const response = await fetch(`/api/templates/${templateId}`);
         if (!response.ok) throw new Error("テンプレート取得失敗");
         const data = await response.json();
-        setTemplate(data.template || data); // データ構造に合わせて調整
+        setTemplate(data.data || null); // データ構造に合わせて調整
       } catch (err: any) {
         setError(err.message);
       } finally {

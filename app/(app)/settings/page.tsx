@@ -27,10 +27,13 @@ export default function Setup() {
         <div className="bg-[#1F6C7E] text-white text-xl font-bold px-8 py-4 ">
           アカウント管理
         </div>
-        <button className="flex items-center justify-between text-black hover:bg-[#DDDDDD] bg-white shadow-md p-6 border border-[#1F6C7E] font-bold">
+        <Link
+          href="/settings/chengePassword"
+          className="flex items-center justify-between text-black hover:bg-[#DDDDDD] bg-white shadow-md p-6 border border-[#1F6C7E] font-bold"
+        >
           <span>パスワード変更</span>
           <img src="/Next.png" alt="Next" className="w-4 h-4" />
-        </button>
+        </Link>
         <button className="flex items-center justify-between text-red-600 hover:bg-[#DDDDDD] bg-white shadow-md p-6 border border-[#1F6C7E] font-bold ">
           <span>ログアウト</span>
           <img src="/Next.png" alt="Next" className="w-4 h-4" />
