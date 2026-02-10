@@ -9,6 +9,8 @@ declare module "next-auth" {
       permission_ids: number[];
       department_id?: number;
       role_id?: number;
+      department_name: string; // ★追加
+      role_name: string; // ★追加
     } & DefaultSession["user"]; // name/email/image は残す
   }
 
@@ -18,6 +20,8 @@ declare module "next-auth" {
     permission_ids: number[];
     department_id?: number;
     role_id?: number;
+    department_name: string; // ★追加
+    role_name: string;
   }
 }
 
@@ -28,5 +32,7 @@ declare module "next-auth/jwt" {
     permission_ids: number[];
     department_id?: number;
     role_id?: number;
+    department_name: string; // ★追加
+    role_name: string; // ★追加
   }
 }

@@ -27,6 +27,14 @@ export const authOptions: NextAuthOptions = {
         // Prismaを使って、DBからユーザーをメールアドレスで探す
         const user = await db.users.findUnique({
           where: { email: credentials.email },
+          include: {
+            departments: {
+              select: { name: true },
+            },
+            roles: {
+              select: { name: true },
+            },
+          },
         });
 
         // ユーザーが見つからない、またはパスワードが設定されていない場合は、認証失敗
@@ -62,8 +70,8 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           permission_ids: permissions.map((p) => p.permission_id),
-          department_id: user.department_id,
-          role_id: user.role_id,
+          department_name: user.departments?.name || "未所属",
+          role_name: user.roles?.name || "一般",
         } as NextAuthUser;
       },
     }),
@@ -81,8 +89,8 @@ export const authOptions: NextAuthOptions = {
         // userオブジェクトは、authorize関数から返されたもの
         token.id = user.id;
         token.permission_ids = user.permission_ids;
-        token.department_id = user.department_id;
-        token.role_id = user.role_id;
+        token.department_name = user.department_name;
+        token.role_name = user.role_name;
       }
       return token;
     },
@@ -92,6 +100,8 @@ export const authOptions: NextAuthOptions = {
         session.user.permission_ids = token.permission_ids;
         session.user.department_id = token.department_id;
         session.user.role_id = token.role_id;
+        session.user.department_name = token.department_name;
+        session.user.role_name = token.role_name;
       }
       return session;
     },
