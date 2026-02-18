@@ -90,8 +90,15 @@ export async function createUser(data: unknown): Promise<ActionResponse> {
       };
     }
 
-    const { name, email, password, departmentId, roleId, permissionId } =
-      result.data;
+    const {
+      name,
+      email,
+      password,
+      departmentId,
+      roleId,
+      permissionId,
+      remaining_leave_hours,
+    } = result.data;
 
     // 2. 重複チェック
     const existingUser = await db.users.findUnique({
@@ -114,6 +121,7 @@ export async function createUser(data: unknown): Promise<ActionResponse> {
         name,
         email,
         password_hash: passwordHash,
+        remaining_leave_hours: remaining_leave_hours,
         departments: {
           connect: { id: departmentId },
         },
