@@ -6,10 +6,10 @@ import Image from "next/image";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import toast, { Toaster } from "react-hot-toast";
-import { useForm } from "react-hook-form"; // ★追加
-import { zodResolver } from "@hookform/resolvers/zod"; // ★追加
-import { UserCreateSchema, type UserCreate } from "@/schemas/user"; // ★追加
-import { createUser } from "@/actions/user"; // ★追加
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { UserCreateSchema, type UserCreate } from "@/schemas/user";
+import { createUser } from "@/actions/user";
 
 const departments = [
   { id: 1, name: "DX推進課" },
@@ -26,7 +26,7 @@ export default function Signup() {
   const router = useRouter();
   const [serverError, setServerError] = useState<string | null>(null);
 
-  // ★ useFormの設定
+  // useFormの設定
   const {
     register,
     handleSubmit,
@@ -35,11 +35,12 @@ export default function Signup() {
   } = useForm({
     resolver: zodResolver(UserCreateSchema),
     defaultValues: {
-      permissionId: 2, // デフォルトでユーザー権限を選択状態にするなどの工夫
+      permissionId: 2, // デフォルトでユーザー権限を選択状態にする
+      remaining_leave_hours: 155, // とりあえず有給20日×実働時間7.75時間で計算した値を初期値にしてる。
     },
   });
 
-  // ★ サインアップ処理
+  // サインアップ処理
   const onSubmit = async (data: UserCreate) => {
     setServerError(null);
 
@@ -86,7 +87,6 @@ export default function Signup() {
                 </p>
               )}
             </div>
-
             {/* メールアドレス */}
             <div className="flex flex-col w-[664px]">
               <input
@@ -101,7 +101,6 @@ export default function Signup() {
                 </p>
               )}
             </div>
-
             {/* 部署 */}
             <div className="flex flex-col w-[664px]">
               <select
@@ -123,7 +122,6 @@ export default function Signup() {
                 </p>
               )}
             </div>
-
             {/* 役職 */}
             <div className="flex flex-col w-[664px]">
               <select
@@ -145,7 +143,28 @@ export default function Signup() {
                 </p>
               )}
             </div>
-
+            {/* 残余時間入力 */}
+            <div className="flex flex-col w-[664px]">
+              <input
+                type="number"
+                step="0.5" // 0.5時間単位の入力を許可
+                placeholder="残余時間 (時間)"
+                className={`h-[56px] w-full bg-[#D9D9D9] pl-[32px] rounded-[8px] ${
+                  errors.remaining_leave_hours ? "border-2 border-red-500" : ""
+                }`}
+                {...register("remaining_leave_hours")}
+              />
+              {/* エラー表示 */}
+              {errors.remaining_leave_hours ? (
+                <p className="text-red-500 text-sm mt-1 ml-2">
+                  {errors.remaining_leave_hours.message}
+                </p>
+              ) : (
+                <p className="text-gray-500 text-xs mt-1 ml-2">
+                  ※ デフォルトは155時間です
+                </p>
+              )}
+            </div>
             {/* 権限 */}
             <div className="w-[664px]">
               <div className="flex items-center gap-[80px]">
@@ -175,7 +194,6 @@ export default function Signup() {
                 </p>
               )}
             </div>
-
             {/* パスワード */}
             <div className="flex flex-col w-[664px]">
               <input
@@ -195,10 +213,15 @@ export default function Signup() {
                 </p>
               )}
             </div>
-
             {/* ボタンエリア */}
-            <div className="flex gap-[184px] text-white text-[20px] font-bold items-center">
-              {/* 戻るボタン：機能させるためにdivにonClickを追加するか、button type="button"推奨 */}
+            <div className="relative flex gap-[184px] text-white text-[20px] font-bold items-center">
+              {serverError && (
+                <p className="absolute top-[-40px] left-0 w-full text-center text-red-500 text-sm font-bold">
+                  {serverError}
+                </p>
+              )}
+
+              {/* 戻るボタン */}
               <div
                 onClick={() => router.back()}
                 className="flex gap-[8px] w-[240px] h-[80px] bg-[#CB223F] justify-center items-center rounded-[16px] cursor-pointer hover:opacity-90 transition-opacity"
@@ -212,13 +235,7 @@ export default function Signup() {
                 <p>戻る</p>
               </div>
 
-              {/* サーバーエラーがあればここに表示 */}
-              {serverError && (
-                <p className="text-red-500 text-sm font-bold absolute mt-[-40px]">
-                  {serverError}
-                </p>
-              )}
-
+              {/* 追加(送信)ボタン */}
               <button
                 type="submit"
                 disabled={isSubmitting}
@@ -227,7 +244,7 @@ export default function Signup() {
                 <Image src="/plus.svg" alt="plus" width={24} height={24} />
                 <p>{isSubmitting ? "追加中..." : "追加"}</p>
               </button>
-            </div>
+            </div>{" "}
           </form>
         </div>
       </div>
