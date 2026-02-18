@@ -5,16 +5,15 @@ import { db } from "@/lib/db";
 import bcrypt from "bcrypt";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/nextauth";
-import { UserPasswordChangeSchema } from "@/schemas/user"; // 先ほど作成したスキーマ
-import { UserCreateSchema } from "@/schemas/user"; // 以前作ったやつ
+import { UserPasswordChangeSchema } from "@/schemas/user";
+import { UserCreateSchema } from "@/schemas/user";
 import { revalidatePath } from "next/cache";
-import { redirect } from "next/navigation";
 
 // 戻り値の型定義
 export type ActionResponse = {
   success: boolean;
   message: string;
-  errors?: Record<string, string[]>; // Zodのエラーメッセージ格納用
+  errors?: Record<string, string[]>;
 };
 
 export async function changePassword(data: unknown): Promise<ActionResponse> {
@@ -44,7 +43,6 @@ export async function changePassword(data: unknown): Promise<ActionResponse> {
 
     // 3. DBから最新のユーザー情報を取得
     const user = await db.users.findUnique({
-      // session.user.id を数値に変換して検索（DBが数値型の場合）
       where: { id: Number(session.user.id) },
     });
 
@@ -58,7 +56,6 @@ export async function changePassword(data: unknown): Promise<ActionResponse> {
       return {
         success: false,
         message: "現在のパスワードが正しくありません。",
-        // 特定のフィールドにエラーを紐付けたい場合は errors に入れる
         errors: { currentPassword: ["パスワードが一致しません。"] },
       };
     }
@@ -66,7 +63,6 @@ export async function changePassword(data: unknown): Promise<ActionResponse> {
     // 5. 新しいパスワードをハッシュ化して更新
     const hashedNewPassword = await bcrypt.hash(newPassword, 10);
     await db.users.update({
-      // 取得した user.id を使うのが一番確実です
       where: { id: user.id },
       data: { password_hash: hashedNewPassword },
     });
@@ -118,16 +114,12 @@ export async function createUser(data: unknown): Promise<ActionResponse> {
         name,
         email,
         password_hash: passwordHash,
-        // 部署と役職はID直指定でも connect でもどちらでも動きますが、
-        // 外部キー制約を確実にするため connect を推奨します
         departments: {
           connect: { id: departmentId },
         },
         roles: {
           connect: { id: roleId },
         },
-        // ★ここがエラーの原因だった箇所！
-        // APIと同じように、中間テーブル(user_permissions)を経由して作成します
         user_permissions: {
           create: {
             permissions: {
