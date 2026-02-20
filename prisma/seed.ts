@@ -1,16 +1,16 @@
 // prisma/seed.ts
 import { PrismaClient } from "@prisma/client";
-import bcrypt from "bcrypt"; // パスワードハッシュ化に必要
+import bcrypt from "bcrypt";
 
 const prisma = new PrismaClient();
 
-// ユーザーから提供された部署データ
+// 部署データ
 const departments = [
   { id: 1, name: "DX推進課" },
   { id: 2, name: "総務課" },
 ];
 
-// ユーザーから提供された役職データ
+// 役職データ
 const roles = [
   { id: 1, name: "課長" },
   { id: 2, name: "係長" },
@@ -57,14 +57,14 @@ async function main() {
   console.log("✅ Permissions seeded");
 
   // 4. 初期ユーザー作成 (Admin)
-  const hashedPassword = await bcrypt.hash("password123", 12);
+  const hashedPassword = await bcrypt.hash("Password123@", 12);
 
   await prisma.users.upsert({
     where: { email: "admin@example.com" },
     update: {}, // 既に存在する場合は何もしない
     create: {
       email: "admin@example.com",
-      name: "小林 陽翔",
+      name: "admin",
       password_hash: hashedPassword,
 
       // 部署: DX推進課 (id:1)
@@ -83,11 +83,42 @@ async function main() {
           },
         },
       },
-      remaining_leave_hours: 80,
+      remaining_leave_hours: 155,
     },
   });
   console.log(
-    "✅ Admin User created (email: admin@example.com / pass: password123)"
+    "✅ Admin User created (email: admin@example.com / pass: Password123@)",
+  );
+
+  await prisma.users.upsert({
+    where: { email: "user@example.com" },
+    update: {},
+    create: {
+      email: "user@example.com",
+      name: "user",
+      password_hash: hashedPassword, // Adminと同じハッシュを利用
+
+      // 部署: DX推進課 (id:1)
+      departments: {
+        connect: { id: 1 },
+      },
+      // 役職: 一般 (id:3)
+      roles: {
+        connect: { id: 3 },
+      },
+      // 権限: 一般ユーザー (id:2)
+      user_permissions: {
+        create: {
+          permissions: {
+            connect: { id: 2 },
+          },
+        },
+      },
+      remaining_leave_hours: 155,
+    },
+  });
+  console.log(
+    "✅ user User created (email: user@example.com / pass: Password123@)",
   );
 
   console.log("🎉 Seeding finished.");
