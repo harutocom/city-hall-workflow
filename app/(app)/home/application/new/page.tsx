@@ -87,13 +87,13 @@ export default function TemplateListPage() {
 
       {/* テンプレート一覧テーブル */}
       <div className="shadow-lg rounded-lg overflow-hidden">
-        <table className="min-w-full bg-white">
+        <table className="w-full table-fixed bg-white">
           <thead className="bg-[#008080] text-white">
             <tr>
-              <th className="py-3 px-6 text-left">テンプレート名</th>
-              <th className="py-3 px-6 text-left">作成者名</th>
-              <th className="py-3 px-6 text-left">最終編集日時</th>
-              <th className="py-3 px-6 text-left">説明</th>
+              <th className="py-3 px-6 text-left whitespace-nowrap w-1/4">テンプレート名</th>
+              <th className="py-3 px-6 text-left whitespace-nowrap w-1/6">作成者名</th>
+              <th className="py-3 px-6 text-left whitespace-nowrap w-1/6">最終編集日時</th>
+              <th className="py-3 px-6 text-left w-1/3">説明</th>
             </tr>
           </thead>
           <tbody className="text-gray-700">
@@ -105,7 +105,7 @@ export default function TemplateListPage() {
                   router.push(`/home/application/new/${template.id}`)
                 } // あとで詳細ページへの遷移を追加
               >
-                <td className="py-4 px-6 font-medium">{template.name}</td>
+                <td className="py-4 px-6 font-medium whitespace-nowrap">{template.name}</td>
                 <td className="py-4 px-6">{template.users?.name || "N/A"}</td>
                 <td className="py-4 px-6">{formatDate(template.updated_at)}</td>
                 <td className="py-4 px-6 text-sm">{template.description}</td>
