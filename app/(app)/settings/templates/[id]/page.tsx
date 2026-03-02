@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import toast, { Toaster } from "react-hot-toast";
+import { useSession } from "next-auth/react";
 
 // --- 型定義 ---
 import { FormComponent } from "@/types/template";
@@ -63,6 +64,11 @@ export default function TemplateDetailPage() {
   const router = useRouter();
   const params = useParams();
   const id = params.id as string;
+  const { data: session } = useSession();
+
+  // ★ 権限判定: システム管理者(1) または ユーザー管理(3) を持っているか
+  const permissionIds = session?.user?.permission_ids || [];
+  const canManageUsers = permissionIds.includes(1) || permissionIds.includes(2);
 
   // --- 状態管理 ---
   const [template, setTemplate] = useState<TemplateDetail | null>(null);
@@ -143,19 +149,21 @@ export default function TemplateDetailPage() {
           <h1 className="text-3xl font-bold">{template.name}</h1>
           <p className="text-gray-500 mt-1">テンプレート詳細</p>
         </div>
-        <div className="flex gap-4">
-          <Link href={`/settings/templates/${id}/edit`}>
-            <button className="flex items-center gap-2 px-6 py-3 bg-[#1F6C7E] text-white font-semibold rounded-lg shadow-md hover:bg-[#006666] transition-colors">
-              編集
+        {canManageUsers && (
+          <div className="flex gap-4">
+            <Link href={`/settings/templates/${id}/edit`}>
+              <button className="flex items-center gap-2 px-6 py-3 bg-[#1F6C7E] text-white font-semibold rounded-lg shadow-md hover:bg-[#006666] transition-colors">
+                編集
+              </button>
+            </Link>
+            <button
+              onClick={handleDelete}
+              className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors"
+            >
+              削除
             </button>
-          </Link>
-          <button
-            onClick={handleDelete}
-            className="flex items-center gap-2 px-6 py-3 bg-red-600 text-white font-semibold rounded-lg shadow-md hover:bg-red-700 transition-colors"
-          >
-            削除
-          </button>
-        </div>
+          </div>
+        )}
       </header>
 
       {/* --- 説明セクション --- */}
