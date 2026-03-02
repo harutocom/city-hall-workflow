@@ -96,7 +96,7 @@ export async function createUser(data: unknown): Promise<ActionResponse> {
       password,
       departmentId,
       roleId,
-      permissionId,
+      permissionIds,
       remaining_leave_hours,
     } = result.data;
 
@@ -121,6 +121,7 @@ export async function createUser(data: unknown): Promise<ActionResponse> {
         name,
         email,
         password_hash: passwordHash,
+        granted_leave_hours: remaining_leave_hours,
         remaining_leave_hours: remaining_leave_hours,
         departments: {
           connect: { id: departmentId },
@@ -129,11 +130,11 @@ export async function createUser(data: unknown): Promise<ActionResponse> {
           connect: { id: roleId },
         },
         user_permissions: {
-          create: {
+          create: permissionIds.map((id: number) => ({
             permissions: {
-              connect: { id: permissionId },
+              connect: { id: id },
             },
-          },
+          })),
         },
       },
     });

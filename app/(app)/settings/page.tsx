@@ -5,8 +5,10 @@ import { useSession } from "next-auth/react";
 
 export default function Setup() {
   const { data: session } = useSession();
+  const permissions =
+    session?.user?.permission_names?.join(", ") || "権限情報なし";
   return (
-    <div className="min-h-screen bg-[#F4F6F8] flex flex-col justify-center px-38 pt-48 pb-16">
+    <div className="min-h-screen bg-[#F4F6F8] flex flex-col px-38 pt-16 pb-16">
       <div className="w-full flex flex-col">
         {/* アカウント情報 */}
         <div className="bg-[#1F6C7E] text-white text-xl font-bold px-8 py-4 rounded-t-xl">
@@ -14,18 +16,25 @@ export default function Setup() {
         </div>
 
         <div className="bg-white shadow-md  border border-[#1F6C7E]">
-          <div className="grid grid-cols-2 gap-y-4">
-            <div className="border border-[#1F6C7E]">
-              <p className="font-semibold text-sm">部署</p>
-              <p className="font-semibold text-center mb-6">
+          <div className="grid grid-cols-3 gap-y-4">
+            <div className="border border-[#1F6C7E] p-4 flex flex-col items-center justify-center">
+              <p className="font-semibold text-sm mb-2 text-gray-600">部署</p>
+              <p className="font-bold text-center text-sm">
                 {session?.user?.department_name || "---"}
               </p>
             </div>
-            <div className="border border-[#1F6C7E]">
-              <p className="font-semibold text-sm">役職</p>
-              <p className="font-semibold text-center mb-6">
+            <div className="border border-[#1F6C7E] p-4 flex flex-col items-center justify-center">
+              <p className="font-semibold text-sm mb-2 text-gray-600">役職</p>
+              <p className="font-bold text-center text-sm">
                 {session?.user?.role_name || "---"}
               </p>
+            </div>
+            {/* ★追加: 権限の表示 */}
+            <div className="border border-[#1F6C7E] p-4 flex flex-col items-center justify-center">
+              <p className="font-semibold text-sm mb-2 text-gray-600">
+                保有権限
+              </p>
+              <p className="font-bold text-center text-sm">{permissions}</p>
             </div>
           </div>
         </div>
