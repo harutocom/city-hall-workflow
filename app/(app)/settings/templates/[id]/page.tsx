@@ -66,7 +66,7 @@ export default function TemplateDetailPage() {
   const id = params.id as string;
   const { data: session } = useSession();
 
-  // ★ 権限判定: システム管理者(1) または ユーザー管理(3) を持っているか
+  // ★ 権限判定: システム管理者(1) または テンプレート管理(2) を持っているか
   const permissionIds = session?.user?.permission_ids || [];
   const canManageUsers = permissionIds.includes(1) || permissionIds.includes(2);
 
