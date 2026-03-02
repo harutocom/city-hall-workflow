@@ -179,7 +179,7 @@ export async function PATCH(
     const validatedBody = UserUpdateSchema.parse(body);
 
     // フロントからのデータを分割代入と型を合わせる(ifを使うとvscodeの型推論が利かなくなるから)
-    const { permissionId, departmentId, roleId, ...userData } = validatedBody;
+    const { permissionIds, departmentId, roleId, ...userData } = validatedBody;
     // Prismaに渡すオブジェクトを組み立てる
     const dataToUpdate: Prisma.usersUpdateInput = {
       ...userData,
@@ -202,17 +202,19 @@ export async function PATCH(
       });
 
       // 権限の更新があれば置き換え
-      if (permissionId) {
+      if (permissionIds) {
         await tx.user_permissions.deleteMany({
           where: { user_id: userId },
         });
 
-        await tx.user_permissions.create({
-          data: {
-            user_id: userId,
-            permission_id: permissionId,
-          },
-        });
+        if (permissionIds.length > 0) {
+          await tx.user_permissions.createMany({
+            data: permissionIds.map((id: number) => ({
+              user_id: userId,
+              permission_id: id,
+            })),
+          });
+        }
       }
       return updateUser;
     });

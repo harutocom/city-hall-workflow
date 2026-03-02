@@ -35,7 +35,7 @@ export default function Signup() {
   } = useForm({
     resolver: zodResolver(UserCreateSchema),
     defaultValues: {
-      permissionId: 2, // デフォルトでユーザー権限を選択状態にする
+      permissionIds: [], // デフォルトでユーザー権限を選択状態にする
       remaining_leave_hours: 155, // とりあえず有給20日×実働時間7.75時間で計算した値を初期値にしてる。
     },
   });
@@ -167,6 +167,35 @@ export default function Signup() {
             </div>
             {/* 権限 */}
             <div className="w-[664px]">
+              <div className="flex items-center gap-[24px]">
+                <h3 className="text-[24px] font-bold">権限</h3>
+                {[
+                  { id: 1, name: "システム管理者" },
+                  { id: 2, name: "テンプレート管理" },
+                  { id: 3, name: "ユーザー管理" },
+                  { id: 4, name: "全申請閲覧" },
+                ].map((perm) => (
+                  <label
+                    key={perm.id}
+                    className="flex items-center cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      value={perm.id}
+                      className="w-6 h-6"
+                      {...register("permissionIds")}
+                    />
+                    <p className="ml-2 text-[16px] font-bold">{perm.name}</p>
+                  </label>
+                ))}
+              </div>
+              {errors.permissionIds && (
+                <p className="text-red-500 text-sm mt-1 ml-2">
+                  {errors.permissionIds.message}
+                </p>
+              )}
+            </div>
+            {/* <div className="w-[664px]">
               <div className="flex items-center gap-[80px]">
                 <h3 className="text-[24px] font-bold">権限</h3>
                 <label className="flex items-center cursor-pointer">
@@ -193,7 +222,7 @@ export default function Signup() {
                   {errors.permissionId.message}
                 </p>
               )}
-            </div>
+            </div> */}
             {/* パスワード */}
             <div className="flex flex-col w-[664px]">
               <input

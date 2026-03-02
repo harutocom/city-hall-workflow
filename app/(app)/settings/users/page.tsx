@@ -101,7 +101,7 @@ export default function TemplateListPage() {
         </Link>
       </header>
 
-      {/* テンプレート一覧テーブル */}
+      {/* User一覧テーブル */}
       <div className="shadow-lg rounded-lg overflow-hidden">
         <table className="min-w-full bg-white">
           <thead className="bg-[#008080] text-white">
@@ -119,8 +119,13 @@ export default function TemplateListPage() {
                 <td className="py-4 px-6 font-medium">{user.name}</td>
                 <td className="py-4 px-6">{user.departments.name}</td>
                 <td className="py-4 px-6">{user.roles.name}</td>
-                <td className="py-4 px-6">
-                  {user.user_permissions[0].permissions.name}
+                {/* 変更: 複数の権限をマップしてカンマ区切りで表示 */}
+                <td className="py-4 px-6 text-sm">
+                  {user.user_permissions.length > 0
+                    ? user.user_permissions
+                        .map((up) => up.permissions.name)
+                        .join(", ")
+                    : "権限なし"}
                 </td>
                 <td className="py-4 px-6 text-sm">
                   <button

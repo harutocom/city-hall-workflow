@@ -57,7 +57,7 @@ async function getUser(id: number) {
     // Date型も念のため文字列や数値にしておくと安全な場合があります
     created_at: res.created_at.toISOString(),
     updated_at: res.updated_at.toISOString(),
-    permissionId: res.user_permissions[0]?.permissions.id.toString() || "2",
+    permissionIds: res.user_permissions.map((up) => up.permissions.id),
     departmentId: res.departments?.id.toString(), // IDを文字列で持っておく
     roleId: res.roles?.id.toString(), // IDを文字列で持っておく
   };
