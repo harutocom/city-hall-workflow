@@ -81,7 +81,7 @@ export default function TemplateDetailPage() {
         if (!response.ok) {
           throw new Error("テンプレートの取得に失敗しました。");
         }
-        const { data } = await response.json();
+        const data = await response.json();
         console.log(data);
         setTemplate(data);
       } catch (err) {
