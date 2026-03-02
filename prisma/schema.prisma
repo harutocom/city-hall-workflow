@@ -179,6 +179,7 @@ model users {
   password_hash           String                    @db.VarChar(255)
   department_id           Int?
   role_id                 Int?
+  granted_leave_hours     Decimal                   @default(155) @db.Decimal
   remaining_leave_hours   Decimal                   @default(0) @db.Decimal
   created_at              DateTime                  @default(now()) @db.Timestamp(6)
   updated_at              DateTime                  @default(now()) @db.Timestamp(6)

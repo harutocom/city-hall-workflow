@@ -64,6 +64,8 @@ export async function GET(request: NextRequest) {
             name: true,
           },
         },
+        granted_leave_hours: true,
+        remaining_leave_hours: true,
         created_at: true,
         updated_at: true,
         user_permissions: {

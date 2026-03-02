@@ -8,7 +8,7 @@ export default function Setup() {
   const permissions =
     session?.user?.permission_names?.join(", ") || "権限情報なし";
   return (
-    <div className="min-h-screen bg-[#F4F6F8] flex flex-col justify-center px-38 pt-48 pb-16">
+    <div className="min-h-screen bg-[#F4F6F8] flex flex-col px-38 pt-16 pb-16">
       <div className="w-full flex flex-col">
         {/* アカウント情報 */}
         <div className="bg-[#1F6C7E] text-white text-xl font-bold px-8 py-4 rounded-t-xl">

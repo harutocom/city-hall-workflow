@@ -18,6 +18,8 @@ export interface Users {
   departments: { name: string };
   role_id: number;
   roles: { name: string };
+  granted_leave_hours: string;
+  remaining_leave_hours: string;
   permission_id: number;
   created_at: string;
   updated_at: string;
@@ -118,35 +120,57 @@ export default function TemplateListPage() {
               <th className="py-3 px-6 text-left">部署</th>
               <th className="py-3 px-6 text-left">役割</th>
               <th className="py-3 px-6 text-left">権限</th>
+              {canManageUsers && (
+                <th className="py-3 px-6 text-left">取得/付与 (残)</th>
+              )}
+              {canManageUsers && <th className="py-3 px-6 text-left"> </th>}
               {canManageUsers && <th className="py-3 px-6 text-left"> </th>}
             </tr>
           </thead>
           <tbody className="text-gray-700">
-            {users.map((user) => (
-              <tr key={user.id} className="border-b border-gray-200">
-                <td className="py-4 px-6 font-medium">{user.name}</td>
-                <td className="py-4 px-6">{user.departments.name}</td>
-                <td className="py-4 px-6">{user.roles.name}</td>
-                {/* 変更: 複数の権限をマップしてカンマ区切りで表示 */}
-                <td className="py-4 px-6 text-sm">
-                  {user.user_permissions.length > 0
-                    ? user.user_permissions
-                        .map((up) => up.permissions.name)
-                        .join(", ")
-                    : "権限なし"}
-                </td>
-                {canManageUsers && (
+            {users.map((user) => {
+              // ★追加: 取得時間の計算 (初期時間 - 残余時間)
+              const granted = Number(user.granted_leave_hours || 0);
+              const remaining = Number(user.remaining_leave_hours || 0);
+              const used = granted - remaining;
+              return (
+                <tr key={user.id} className="border-b border-gray-200">
+                  <td className="py-4 px-6 font-medium">{user.name}</td>
+                  <td className="py-4 px-6">{user.departments.name}</td>
+                  <td className="py-4 px-6">{user.roles.name}</td>
+                  {/* 変更: 複数の権限をマップしてカンマ区切りで表示 */}
                   <td className="py-4 px-6 text-sm">
-                    <button
-                      className="text-blue-500 hover:underline font-bold cursor-pointer"
-                      onClick={() => router.push(`/settings/users/${user.id}`)}
-                    >
-                      編集
-                    </button>
+                    {user.user_permissions.length > 0
+                      ? user.user_permissions
+                          .map((up) => up.permissions.name)
+                          .join(", ")
+                      : "権限なし"}
                   </td>
-                )}
-              </tr>
-            ))}
+                  {/* ★追加: ユーザー管理権限がある場合のみ時間データを表示 */}
+                  {canManageUsers && (
+                    <td className="py-4 px-6 text-sm">
+                      <span className="font-bold text-red-600">{used}h</span> /{" "}
+                      {granted}h
+                      <span className="text-gray-500 ml-2">
+                        (残: {remaining}h)
+                      </span>
+                    </td>
+                  )}
+                  {canManageUsers && (
+                    <td className="py-4 px-6 text-sm">
+                      <button
+                        className="text-blue-500 hover:underline font-bold cursor-pointer"
+                        onClick={() =>
+                          router.push(`/settings/users/${user.id}`)
+                        }
+                      >
+                        編集
+                      </button>
+                    </td>
+                  )}
+                </tr>
+              );
+            })}
           </tbody>
         </table>
         {users.length === 0 && (
