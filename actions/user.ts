@@ -121,6 +121,7 @@ export async function createUser(data: unknown): Promise<ActionResponse> {
         name,
         email,
         password_hash: passwordHash,
+        granted_leave_hours: remaining_leave_hours,
         remaining_leave_hours: remaining_leave_hours,
         departments: {
           connect: { id: departmentId },

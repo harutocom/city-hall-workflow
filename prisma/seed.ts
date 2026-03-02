@@ -85,6 +85,7 @@ async function main() {
           },
         },
       },
+      granted_leave_hours: 155,
       remaining_leave_hours: 155,
     },
   });
@@ -116,6 +117,7 @@ async function main() {
           },
         },
       },
+      granted_leave_hours: 155,
       remaining_leave_hours: 155,
     },
   });

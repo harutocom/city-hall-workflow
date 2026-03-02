@@ -50,6 +50,10 @@ export const UserCreateSchema = z.object({
     .positive({ message: "部署IDは必須です。" }),
   roleId: z.coerce.number().int().positive({ message: "役職IDは必須です。" }),
   permissionIds: z.array(z.coerce.number().int()).default([]),
+  granted_leave_hours: z.coerce
+    .number()
+    .min(0, "0以上の数値を入力してください")
+    .default(155),
   remaining_leave_hours: z.coerce
     .number()
     .min(0, "0以上の数値を入力してください")
