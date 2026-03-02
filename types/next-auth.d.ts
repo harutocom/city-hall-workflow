@@ -7,6 +7,7 @@ declare module "next-auth" {
     user?: {
       id: string; // NextAuthではuser.idはstring型で扱われる
       permission_ids: number[];
+      permission_names: string[]; // 追加
       department_id?: number;
       role_id?: number;
       department_name: string; // ★追加
@@ -18,6 +19,7 @@ declare module "next-auth" {
   interface User {
     id: string;
     permission_ids: number[];
+    permission_names: string[]; // 追加
     department_id?: number;
     role_id?: number;
     department_name: string; // ★追加
@@ -30,6 +32,7 @@ declare module "next-auth/jwt" {
   interface JWT {
     id: string;
     permission_ids: number[];
+    permission_names: string[]; // 追加
     department_id?: number;
     role_id?: number;
     department_name: string; // ★追加

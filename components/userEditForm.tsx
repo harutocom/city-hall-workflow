@@ -52,7 +52,6 @@ export default function UserEditForm({
         headers: {
           "Content-Type": "application/json",
         },
-        // 一括管理している formData をそのまま送れるので楽ですね！
         body: JSON.stringify(formData),
       });
       toast.dismiss();
@@ -133,7 +132,47 @@ export default function UserEditForm({
                 </option>
               ))}
             </select>
-            <div className="flex items-center gap-[80px]">
+            <div className="w-[664px] flex flex-col gap-[16px]">
+              <h3 className="text-[24px] font-bold">権限</h3>
+              <div className="flex flex-wrap gap-[24px]">
+                {[
+                  { id: 1, name: "システム管理者" },
+                  { id: 2, name: "テンプレート管理" },
+                  { id: 3, name: "ユーザー管理" },
+                  { id: 4, name: "全申請閲覧" },
+                ].map((perm) => (
+                  <label
+                    key={perm.id}
+                    className="flex items-center cursor-pointer"
+                  >
+                    <input
+                      type="checkbox"
+                      value={perm.id}
+                      checked={
+                        formData.permissionIds?.includes(perm.id) || false
+                      }
+                      onChange={(e) => {
+                        const checked = e.target.checked;
+                        setFormData((prev) => {
+                          const currentIds = prev.permissionIds || [];
+                          return {
+                            ...prev,
+                            permissionIds: checked
+                              ? [...currentIds, perm.id]
+                              : currentIds.filter(
+                                  (id: number) => id !== perm.id,
+                                ),
+                          };
+                        });
+                      }}
+                      className="w-6 h-6"
+                    />
+                    <p className="ml-2 text-[16px] font-bold">{perm.name}</p>
+                  </label>
+                ))}
+              </div>
+            </div>
+            {/* <div className="flex items-center gap-[80px]">
               <h3 className="text-[24px] font-bold">権限</h3>
               <label className="flex">
                 <input
@@ -155,7 +194,7 @@ export default function UserEditForm({
                 ></input>
                 <p className="ml-2 text-[24px] font-bold">ユーザー</p>
               </label>
-            </div>
+            </div> */}
             <div className="flex gap-[184px] text-white text-[20px] font-bold">
               <div className="flex gap-[8px] w-[240px] h-[80px] bg-[#CB223F] justify-center items-center rounded-[16px]">
                 <Image

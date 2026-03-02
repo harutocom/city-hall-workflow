@@ -56,13 +56,17 @@ export const authOptions: NextAuthOptions = {
         // ユーザーの権限情報を取得
         const permissions = await db.user_permissions.findMany({
           where: { user_id: user.id },
-          select: { permission_id: true },
+          include: {
+            permissions: {
+              select: { name: true }, // nameを取得
+            },
+          },
         });
 
-        // 権限情報が見つからない場合、認証失敗
-        if (!permissions || permissions.length === 0) {
-          throw new Error("ユーザーの権限情報が見つかりません。");
-        }
+        // // 権限情報が見つからない場合、認証失敗
+        // if (!permissions || permissions.length === 0) {
+        //   throw new Error("ユーザーの権限情報が見つかりません。");
+        // }
 
         // 認証成功！ JWTに渡すユーザー情報を返す
         return {
@@ -70,6 +74,7 @@ export const authOptions: NextAuthOptions = {
           email: user.email,
           name: user.name,
           permission_ids: permissions.map((p) => p.permission_id),
+          permission_names: permissions.map((p) => p.permissions.name),
           department_name: user.departments?.name || "未所属",
           role_name: user.roles?.name || "一般",
         } as NextAuthUser;
@@ -89,6 +94,7 @@ export const authOptions: NextAuthOptions = {
         // userオブジェクトは、authorize関数から返されたもの
         token.id = user.id;
         token.permission_ids = user.permission_ids;
+        token.permission_names = user.permission_names; // 追加
         token.department_name = user.department_name;
         token.role_name = user.role_name;
       }
@@ -98,6 +104,7 @@ export const authOptions: NextAuthOptions = {
       if (session.user) {
         session.user.id = token.id;
         session.user.permission_ids = token.permission_ids;
+        session.user.permission_names = token.permission_names as string[]; // 追加
         session.user.department_id = token.department_id;
         session.user.role_id = token.role_id;
         session.user.department_name = token.department_name;

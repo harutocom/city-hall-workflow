@@ -4,6 +4,7 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { useSession } from "next-auth/react";
 
 export type Permission = {
   id: number;
@@ -28,6 +29,11 @@ export interface Users {
 }
 
 export default function TemplateListPage() {
+  const { data: session } = useSession();
+  // ★ 権限判定: システム管理者(1) または ユーザー管理(3) を持っているか
+  const permissionIds = session?.user?.permission_ids || [];
+  const canManageUsers = permissionIds.includes(1) || permissionIds.includes(3);
+
   const router = useRouter();
 
   // --- 状態管理 ---
@@ -80,28 +86,30 @@ export default function TemplateListPage() {
         <h1 className="text-3xl font-bold border-l-4 border-[#008080] pl-4">
           ユーザー一覧
         </h1>
-        <Link href="users/signup">
-          <button className="flex items-center gap-2 px-6 py-3 bg-[#008080] text-white font-semibold rounded-lg shadow-md hover:bg-[#006666] transition-colors">
-            {/* ここにアイコンを挿入できます (例: <PencilIcon />) */}
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-5 w-5"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
-              <path
-                fillRule="evenodd"
-                d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
-                clipRule="evenodd"
-              />
-            </svg>
-            <span>新規作成</span>
-          </button>
-        </Link>
+        {canManageUsers && (
+          <Link href="users/signup">
+            <button className="flex items-center gap-2 px-6 py-3 bg-[#008080] text-white font-semibold rounded-lg shadow-md hover:bg-[#006666] transition-colors">
+              {/* ここにアイコンを挿入できます (例: <PencilIcon />) */}
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                className="h-5 w-5"
+                viewBox="0 0 20 20"
+                fill="currentColor"
+              >
+                <path d="M17.414 2.586a2 2 0 00-2.828 0L7 10.172V13h2.828l7.586-7.586a2 2 0 000-2.828z" />
+                <path
+                  fillRule="evenodd"
+                  d="M2 6a2 2 0 012-2h4a1 1 0 010 2H4v10h10v-4a1 1 0 112 0v4a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"
+                  clipRule="evenodd"
+                />
+              </svg>
+              <span>新規作成</span>
+            </button>
+          </Link>
+        )}
       </header>
 
-      {/* テンプレート一覧テーブル */}
+      {/* User一覧テーブル */}
       <div className="shadow-lg rounded-lg overflow-hidden">
         <table className="min-w-full bg-white">
           <thead className="bg-[#008080] text-white">
@@ -110,7 +118,7 @@ export default function TemplateListPage() {
               <th className="py-3 px-6 text-left">部署</th>
               <th className="py-3 px-6 text-left">役割</th>
               <th className="py-3 px-6 text-left">権限</th>
-              <th className="py-3 px-6 text-left"> </th>
+              {canManageUsers && <th className="py-3 px-6 text-left"> </th>}
             </tr>
           </thead>
           <tbody className="text-gray-700">
@@ -119,17 +127,24 @@ export default function TemplateListPage() {
                 <td className="py-4 px-6 font-medium">{user.name}</td>
                 <td className="py-4 px-6">{user.departments.name}</td>
                 <td className="py-4 px-6">{user.roles.name}</td>
-                <td className="py-4 px-6">
-                  {user.user_permissions[0].permissions.name}
-                </td>
+                {/* 変更: 複数の権限をマップしてカンマ区切りで表示 */}
                 <td className="py-4 px-6 text-sm">
-                  <button
-                    className="text-blue-500 hover:underline font-bold cursor-pointer"
-                    onClick={() => router.push(`/settings/users/${user.id}`)}
-                  >
-                    編集
-                  </button>
+                  {user.user_permissions.length > 0
+                    ? user.user_permissions
+                        .map((up) => up.permissions.name)
+                        .join(", ")
+                    : "権限なし"}
                 </td>
+                {canManageUsers && (
+                  <td className="py-4 px-6 text-sm">
+                    <button
+                      className="text-blue-500 hover:underline font-bold cursor-pointer"
+                      onClick={() => router.push(`/settings/users/${user.id}`)}
+                    >
+                      編集
+                    </button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

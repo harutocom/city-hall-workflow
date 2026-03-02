@@ -19,8 +19,10 @@ const roles = [
 
 // 権限データ
 const permissions = [
-  { id: 1, name: "管理者" },
-  { id: 2, name: "ユーザー" },
+  { id: 1, name: "システム管理者" },
+  { id: 2, name: "テンプレート管理" },
+  { id: 3, name: "ユーザー管理" },
+  { id: 4, name: "全申請閲覧" },
 ];
 
 async function main() {
