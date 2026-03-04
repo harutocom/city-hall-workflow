@@ -5,6 +5,7 @@ import { useState } from "react";
 import { useRouter, useParams } from "next/navigation";
 import { FlattenedUser } from "@/app/(app)/settings/users/[id]/page";
 import toast, { Toaster } from "react-hot-toast";
+import Link from "next/link";
 
 const departments = [
   { id: 1, name: "DX推進課" },
@@ -172,31 +173,11 @@ export default function UserEditForm({
                 ))}
               </div>
             </div>
-            {/* <div className="flex items-center gap-[80px]">
-              <h3 className="text-[24px] font-bold">権限</h3>
-              <label className="flex">
-                <input
-                  type="radio"
-                  name="permissionId"
-                  value="1"
-                  checked={formData.permissionId === "1"}
-                  onChange={(e) => handleChange(e)}
-                ></input>
-                <p className="ml-2 text-[24px] font-bold">管理者</p>
-              </label>
-              <label className="flex">
-                <input
-                  type="radio"
-                  name="permissionId"
-                  value="2"
-                  checked={formData.permissionId === "2"}
-                  onChange={(e) => handleChange(e)}
-                ></input>
-                <p className="ml-2 text-[24px] font-bold">ユーザー</p>
-              </label>
-            </div> */}
             <div className="flex gap-[184px] text-white text-[20px] font-bold">
-              <div className="flex gap-[8px] w-[240px] h-[80px] bg-[#CB223F] justify-center items-center rounded-[16px]">
+              <Link
+                href="/settings/users"
+                className="flex gap-[8px] w-[240px] h-[80px] bg-[#CB223F] justify-center items-center rounded-[16px]"
+              >
                 <Image
                   src="/back-arrow.svg"
                   alt="arrow"
@@ -204,7 +185,7 @@ export default function UserEditForm({
                   height={24}
                 ></Image>
                 <p>戻る</p>
-              </div>
+              </Link>
               {error && <p className="text-red-500 text-center">{error}</p>}
               <button className="flex gap-[8px] w-[240px] h-[80px] bg-[#1F6C7E] justify-center items-center rounded-[16px]">
                 <Image
