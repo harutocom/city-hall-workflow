@@ -60,9 +60,33 @@ export const UserCreateSchema = z.object({
     .default(155),
 });
 
-export const UserUpdateSchema = UserCreateSchema.omit({
-  password: true, // パスワードは更新対象にしない
-}).partial(); // 残りの項目（名前・部署など）を任意にする
+// Update時にdefaultを設定すると上書きされるのでUserCreateShemaとは別で作成
+export const UserUpdateSchema = z.object({
+  name: z.string().min(1, { message: "氏名は必須です。" }).optional(),
+  email: z
+    .string()
+    .email({ message: "有効なメールアドレスを入力してください。" })
+    .optional(),
+  departmentId: z.coerce
+    .number()
+    .int()
+    .positive({ message: "部署IDは必須です。" })
+    .optional(),
+  roleId: z.coerce
+    .number()
+    .int()
+    .positive({ message: "役職IDは必須です。" })
+    .optional(),
+  permissionIds: z.array(z.coerce.number().int()).optional(),
+  granted_leave_hours: z.coerce
+    .number()
+    .min(0, "0以上の数値を入力してください")
+    .optional(),
+  remaining_leave_hours: z.coerce
+    .number()
+    .min(0, "0以上の数値を入力してください")
+    .optional(),
+});
 
 // 型としてもexport
 export type UserCreate = z.infer<typeof UserCreateSchema>;
