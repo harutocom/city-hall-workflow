@@ -62,7 +62,7 @@ export default function UserEditForm({
         setError(errorData.message || "更新に失敗しました");
         return;
       }
-      toast.success("テンプレートを正常に更新しました！");
+      toast.success("ユーザー情報を正常に更新しました！");
       router.refresh();
       router.push(`/settings/users`); // 一覧ページに戻る
     } catch (error) {
@@ -71,6 +71,36 @@ export default function UserEditForm({
           ? error.message
           : "データの読み込みに失敗しました。",
       );
+    }
+  };
+
+  const handleDelete = async () => {
+    // 誤操作防止のコンファーム
+    if (!window.confirm("このユーザーを削除（無効化）しますか？")) {
+      return;
+    }
+
+    setError(null);
+    toast.loading("ユーザーを削除中...");
+
+    try {
+      const response = await fetch(`/api/users/${formData.id}`, {
+        method: "DELETE",
+      });
+      toast.dismiss();
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        setError(errorData.message || "削除に失敗しました");
+        return;
+      }
+
+      toast.success("ユーザーを正常に削除しました！");
+      router.refresh();
+      router.push(`/settings/users`); // 一覧ページに戻る
+    } catch (error) {
+      toast.dismiss();
+      toast.error("データの削除に失敗しました。");
     }
   };
   return (
@@ -174,28 +204,38 @@ export default function UserEditForm({
               </div>
             </div>
             <div className="flex gap-[184px] text-white text-[20px] font-bold">
-              <Link
-                href="/settings/users"
-                className="flex gap-[8px] w-[240px] h-[80px] bg-[#CB223F] justify-center items-center rounded-[16px]"
+              {/* 新規追加：削除ボタン */}
+              <div
+                className="flex gap-[8px] w-[240px] h-[80px] bg-[#CB223F] justify-center items-center rounded-[16px] cursor-pointer"
+                onClick={handleDelete}
               >
-                <Image
-                  src="/back-arrow.svg"
-                  alt="arrow"
-                  width={24}
-                  height={24}
-                ></Image>
-                <p>戻る</p>
-              </Link>
-              {error && <p className="text-red-500 text-center">{error}</p>}
-              <button className="flex gap-[8px] w-[240px] h-[80px] bg-[#1F6C7E] justify-center items-center rounded-[16px]">
-                <Image
-                  src="/plus.svg"
-                  alt="plus"
-                  width={24}
-                  height={24}
-                ></Image>
-                <p>追加</p>
-              </button>
+                <p>削除</p>
+              </div>
+
+              <div className="flex gap-[4px]">
+                <Link
+                  href="/settings/users"
+                  className="flex gap-[8px] w-[240px] h-[80px] bg-[#607D8B] justify-center items-center rounded-[16px]"
+                >
+                  <Image
+                    src="/back-arrow.svg"
+                    alt="arrow"
+                    width={24}
+                    height={24}
+                  ></Image>
+                  <p>戻る</p>
+                </Link>
+                {error && <p className="text-red-500 text-center">{error}</p>}
+                <button className="flex gap-[8px] w-[240px] h-[80px] bg-[#1F6C7E] justify-center items-center rounded-[16px]">
+                  <Image
+                    src="/plus.svg"
+                    alt="plus"
+                    width={24}
+                    height={24}
+                  ></Image>
+                  <p>保存</p>
+                </button>
+              </div>
             </div>
           </form>
         </div>
