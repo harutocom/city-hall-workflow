@@ -290,13 +290,30 @@ export async function DELETE(
       );
     }
 
-    // usersテーブルにdeleted_atを追加
+    const targetUser = await db.users.findUnique({
+      where: { id: targetUserId },
+    });
+
+    if (!targetUser) {
+      return NextResponse.json(
+        { message: "対象のユーザーが見つかりません。" },
+        { status: 404 },
+      );
+    }
+
+    /**
+     * usersテーブルにdeleted_atを追加
+     * メールアドレスのユニーク制約を保ったまま論理削除後のメールアドレスを開放するために
+     * 論理削除時にメールアドレスにdeleted_とタイムスタンプを追加することで別の文字列にして
+     * ユニーク制約を維持しつつメールアドレスを開放し、さらに元データを追えるようにしてる。
+     */
     await db.users.update({
       where: {
         id: targetUserId,
       },
       data: {
         deleted_at: new Date(),
+        email: `deleted_${Date.now()}_${targetUser.email}`,
       },
     });
 
