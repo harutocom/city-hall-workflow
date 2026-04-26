@@ -6,17 +6,7 @@ import { useRouter, useParams } from "next/navigation";
 import { FlattenedUser } from "@/app/(app)/settings/users/[id]/page";
 import toast, { Toaster } from "react-hot-toast";
 import Link from "next/link";
-
-const departments = [
-  { id: 1, name: "DX推進課" },
-  { id: 2, name: "総務課" },
-];
-
-const roles = [
-  { id: 1, name: "課長" },
-  { id: 2, name: "係長" },
-  { id: 3, name: "一般" },
-];
+import { DEPARTMENTS, ROLES } from "@/lib/constants";
 
 export default function UserEditForm({
   initialData,
@@ -144,7 +134,7 @@ export default function UserEditForm({
               onChange={(e) => handleChange(e)}
             >
               <option hidden>部署</option>
-              {departments.map((department) => (
+              {DEPARTMENTS.map((department) => (
                 <option key={department.id} value={department.id}>
                   {department.name}
                 </option>
@@ -157,7 +147,7 @@ export default function UserEditForm({
               onChange={(e) => handleChange(e)}
             >
               <option hidden>役職</option>
-              {roles.map((role) => (
+              {ROLES.map((role) => (
                 <option key={role.id} value={role.id}>
                   {role.name}
                 </option>

@@ -97,11 +97,10 @@ export async function POST(request: NextRequest) {
     });
 
     if (!token) {
-      // トークンが無かったらエラーを返す
-      return NextResponse.json({
-        message: "ログインされていません。",
-        status: 401,
-      });
+      return NextResponse.json(
+        { message: "ログインされていません。" },
+        { status: 401 },
+      );
     }
 
     // token.id を直接検証・使用する
@@ -211,11 +210,7 @@ export async function POST(request: NextRequest) {
               data: stepsData,
             });
           } else {
-            // ルート定義がない場合 (デモ等で急に作ったテンプレートなど)
-            console.warn(
-              `Template ${template_id} has no approval routes defined.`
-            );
-            // 要件によりますが、今回はエラーにせず「承認なし」として通します
+            // 承認ルート未定義の場合はそのまま通す（承認なし扱い）
           }
         }
         return newApplication;
@@ -233,7 +228,6 @@ export async function POST(request: NextRequest) {
     // エラーがzodによるものかそれ以外かを判断
     if (error instanceof z.ZodError) {
       // zodエラーの場合どこの入力でエラーかを返す
-      console.warn("Zodバリデーション失敗:", error.issues);
       return NextResponse.json(
         {
           message: "入力データが無効です。",
