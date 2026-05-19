@@ -38,7 +38,7 @@ export default function TemplateEditPage() {
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [components, setComponents] = useState<FormComponent[]>([]);
   const [selectedComponentId, setSelectedComponentId] = useState<string | null>(
-    null
+    null,
   );
 
   // useEffectを使い、レンダリングされたらDBからデータを取得する
@@ -57,20 +57,22 @@ export default function TemplateEditPage() {
           throw new Error("テンプレートデータの取得に失敗しました。");
         }
         const data = await response.json();
-        const template: TemplateDetail = data.template;
+        const template: TemplateDetail = data;
+
+        console.log(template);
 
         // 取得したデータでStateを初期化
         setName(template.name);
         setDescription(template.description || "");
         // APIから取得した要素に、クライアント側で使うユニークIDを付与する
         setComponents(
-          template.template_elements.map((el) => ({ ...el, id: nanoid() }))
+          template.template_elements.map((el) => ({ ...el, id: nanoid() })),
         );
       } catch (error) {
         toast.error(
           error instanceof Error
             ? error.message
-            : "データの読み込みに失敗しました。"
+            : "データの読み込みに失敗しました。",
         );
       } finally {
         setIsLoading(false);
@@ -122,7 +124,7 @@ export default function TemplateEditPage() {
     } catch (error) {
       toast.dismiss();
       toast.error(
-        error instanceof Error ? error.message : "不明なエラーが発生しました。"
+        error instanceof Error ? error.message : "不明なエラーが発生しました。",
       );
     } finally {
       setIsLoading(false);
@@ -146,18 +148,18 @@ export default function TemplateEditPage() {
 
   const handleUpdateComponent = (
     id: string,
-    newProps: Partial<FormComponent>
+    newProps: Partial<FormComponent>,
   ) => {
     setComponents((currentComponents) =>
       currentComponents.map((component) =>
-        component.id === id ? { ...component, ...newProps } : component
-      )
+        component.id === id ? { ...component, ...newProps } : component,
+      ),
     );
   };
 
   const handleDeleteComponent = (id: string) => {
     setComponents((currentComponents) =>
-      currentComponents.filter((component) => component.id !== id)
+      currentComponents.filter((component) => component.id !== id),
     );
     if (selectedComponentId === id) {
       setSelectedComponentId(null);
