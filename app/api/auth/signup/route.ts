@@ -1,18 +1,19 @@
 // app/api/auth/signup/route.ts
 
 import { NextResponse } from "next/server";
-// import { getServerSession } from "next-auth";
-// import { AuthOptions } from "@/types/nextauth";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/nextauth";
 import bcrypt from "bcrypt";
 import { db } from "@/lib/db";
 
 export async function POST(request: Request) {
   try {
-    // 管理者のみがユーザー登録可能（コメントアウトしているのは、初回登録時に管理者ユーザーがいないため）
-    // const session = await getServerSession(AuthOptions);
-    // if (!session?.user?.is_admin) {
-    //   return new NextResponse("権限がありません", { status: 403 });
-    // }
+    const session = await getServerSession(authOptions);
+    const permissionIds = (session?.user?.permission_ids as number[]) ?? [];
+    if (!session || !permissionIds.includes(1)) {
+      return new NextResponse("権限がありません", { status: 403 });
+    }
+
     const body = await request.json();
     const { email, name, password, departmentId, roleId, permissionId } = body;
 

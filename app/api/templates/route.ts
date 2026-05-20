@@ -67,11 +67,10 @@ export async function POST(request: NextRequest) {
 
     // 念のためtokenが存在するか(ログイン状態かどうか)を確認
     if (!token) {
-      // tokenが無かったらエラーを返す
-      return NextResponse.json({
-        message: "ログインされていません。",
-        status: 401,
-      });
+      return NextResponse.json(
+        { message: "ログインされていません。" },
+        { status: 401 },
+      );
     }
 
     // 取得したtokenから必要な情報を変数へ代入
@@ -81,12 +80,10 @@ export async function POST(request: NextRequest) {
 
     //userに権限があるかを確認
     if (!userPermissions.includes(targetPermission)) {
-      // 権限が無い場合エラーを返す
-      console.error(`status:403 ${userId}はテンプレート作成の権限がありません`);
-      return NextResponse.json({
-        message: "テンプレート作成の権限がありません",
-        status: 403,
-      });
+      return NextResponse.json(
+        { message: "テンプレート作成の権限がありません" },
+        { status: 403 },
+      );
     }
     // フロントからデータを取得
     const data = await request.json();
@@ -148,7 +145,6 @@ export async function POST(request: NextRequest) {
     // エラーがzodによるものかそれ以外かを判断
     if (error instanceof z.ZodError) {
       // zodエラーの場合どこの入力でエラーかを返す
-      console.warn("Zodバリデーション失敗:", error.issues);
       return NextResponse.json(
         {
           message: "入力データが無効です。",

@@ -1,0 +1,8 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(head -348 \"c:/Users/T124059/Documents/Workspace/city-hall-workflow/app/\\(app\\)/settings/templates/create/page.tsx\")",
+      "Bash(mv /tmp/template_create_clean.tsx \"c:/Users/T124059/Documents/Workspace/city-hall-workflow/app/\\(app\\)/settings/templates/create/page.tsx\")"
+    ]
+  }
+}

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import { DEPARTMENTS, ROLES } from "@/lib/constants";
 
 export default function AddUser() {
   const [name, setName] = useState("");
@@ -27,8 +28,6 @@ export default function AddUser() {
       permission_id: parseInt(permissionId, 10),
     };
 
-    console.log("送信データ:", payload);
-
     try {
       const response = await fetch("/api/users", {
         method: "POST",
@@ -42,11 +41,9 @@ export default function AddUser() {
         return;
       }
 
-      const result = await response.json();
-      console.log("登録成功:", result);
+      await response.json();
       alert("ユーザー登録が完了しました！");
-    } catch (error) {
-      console.error("通信エラー:", error);
+    } catch {
       alert("通信エラーが発生しました");
     }
   };
@@ -80,28 +77,28 @@ export default function AddUser() {
               onChange={(e) => setEmail(e.target.value)}
             />
 
-            {/* 部署（IDに変更） */}
+            {/* 部署 */}
             <select
               className="w-full h-12 px-4 rounded-md bg-gray-200 text-gray-700 focus:outline-none"
               value={departmentId}
               onChange={(e) => setDepartmentId(e.target.value)}
             >
               <option value="">部署</option>
-              <option value="10">営業部</option>
-              <option value="20">総務部</option>
-              <option value="30">開発部</option>
+              {DEPARTMENTS.map((d) => (
+                <option key={d.id} value={d.id}>{d.name}</option>
+              ))}
             </select>
 
-            {/* 役職（IDに変更） */}
+            {/* 役職 */}
             <select
               className="w-full h-12 px-4 rounded-md bg-gray-200 text-gray-700 focus:outline-none"
               value={roleId}
               onChange={(e) => setRoleId(e.target.value)}
             >
               <option value="">役職</option>
-              <option value="1">課長</option>
-              <option value="2">係長</option>
-              <option value="3">主任</option>
+              {ROLES.map((r) => (
+                <option key={r.id} value={r.id}>{r.name}</option>
+              ))}
             </select>
 
             {/* 権限（permission_id） */}

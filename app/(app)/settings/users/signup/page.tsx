@@ -10,17 +10,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { UserCreateSchema, type UserCreate } from "@/schemas/user";
 import { createUser } from "@/actions/user";
-
-const departments = [
-  { id: 1, name: "DX推進課" },
-  { id: 2, name: "総務課" },
-];
-
-const roles = [
-  { id: 1, name: "課長" },
-  { id: 2, name: "係長" },
-  { id: 3, name: "一般" },
-];
+import { DEPARTMENTS, ROLES } from "@/lib/constants";
 
 export default function Signup() {
   const router = useRouter();
@@ -110,7 +100,7 @@ export default function Signup() {
                 <option hidden value="">
                   部署
                 </option>
-                {departments.map((department) => (
+                {DEPARTMENTS.map((department) => (
                   <option key={department.id} value={department.id}>
                     {department.name}
                   </option>
@@ -131,7 +121,7 @@ export default function Signup() {
                 <option hidden value="">
                   役職
                 </option>
-                {roles.map((role) => (
+                {ROLES.map((role) => (
                   <option key={role.id} value={role.id}>
                     {role.name}
                   </option>

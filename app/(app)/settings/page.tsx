@@ -1,12 +1,19 @@
 "use client";
 import React from "react";
 import Link from "next/link";
-import { useSession } from "next-auth/react";
+import { useSession, signOut } from "next-auth/react";
+import { useRouter } from "next/navigation";
 
 export default function Setup() {
   const { data: session } = useSession();
+  const router = useRouter();
   const permissions =
     session?.user?.permission_names?.join(", ") || "権限情報なし";
+
+  const handleLogout = async () => {
+    await signOut({ redirect: false });
+    router.push("/login");
+  };
   return (
     <div className="min-h-screen bg-[#F4F6F8] flex flex-col px-38 pt-16 pb-16">
       <div className="w-full flex flex-col">
@@ -44,13 +51,16 @@ export default function Setup() {
           アカウント管理
         </div>
         <Link
-          href="/settings/chengePassword"
+          href="/settings/changePassword"
           className="flex items-center justify-between text-black hover:bg-[#DDDDDD] bg-white shadow-md p-6 border border-[#1F6C7E] font-bold"
         >
           <span>パスワード変更</span>
           <img src="/Next.png" alt="Next" className="w-4 h-4" />
         </Link>
-        <button className="flex items-center justify-between text-red-600 hover:bg-[#DDDDDD] bg-white shadow-md p-6 border border-[#1F6C7E] font-bold ">
+        <button
+          onClick={handleLogout}
+          className="flex items-center justify-between text-red-600 hover:bg-[#DDDDDD] bg-white shadow-md p-6 border border-[#1F6C7E] font-bold"
+        >
           <span>ログアウト</span>
           <img src="/Next.png" alt="Next" className="w-4 h-4" />
         </button>

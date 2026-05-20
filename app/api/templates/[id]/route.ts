@@ -74,7 +74,6 @@ export async function GET(
   } catch (error) {
     if (error instanceof z.ZodError) {
       // zodエラーの場合どこの入力でエラーかを返す
-      console.warn("Zodバリデーション失敗:", error.issues);
       return NextResponse.json(
         {
           message: "入力データが無効です。",
@@ -117,26 +116,22 @@ export async function PUT(
       secret: process.env.NEXTAUTH_SECRET,
     });
     if (!token) {
-      return NextResponse.json({
-        message: "ログインされていません。",
-        status: 401,
-      });
+      return NextResponse.json(
+        { message: "ログインされていません。" },
+        { status: 401 },
+      );
     }
 
     // 2. トークンとIDを取得し認証
     const { id: templateId } = TemplateIdParamSchema.parse({ id });
-    const userId = token.id;
     const userPermissions = token.permission_ids;
-    const targetPermission = 1; // テンプレート作成に必要な権限ID
+    const targetPermission = 1;
 
-    //userに権限があるかを確認
     if (!userPermissions.includes(targetPermission)) {
-      // 権限が無い場合エラーを返す
-      console.error(`status:403 ${userId}はテンプレート作成の権限がありません`);
-      return NextResponse.json({
-        message: "テンプレート作成の権限がありません",
-        status: 403,
-      });
+      return NextResponse.json(
+        { message: "テンプレート作成の権限がありません" },
+        { status: 403 },
+      );
     }
 
     // 3. フロントからデータを取得し検証
@@ -187,7 +182,6 @@ export async function PUT(
     // エラーがzodによるものかそれ以外かを判断
     if (error instanceof z.ZodError) {
       // zodエラーの場合どこの入力でエラーかを返す
-      console.warn("Zodバリデーション失敗:", error.issues);
       return NextResponse.json(
         {
           message: "入力データが無効です。",
@@ -224,27 +218,20 @@ export async function DELETE(
       secret: process.env.NEXTAUTH_SECRET,
     });
 
-    // tokenがあるか(ログイン中かどうか)を確認
     if (!token) {
-      // tokenが無かったらエラーを返す
-      return NextResponse.json({
-        message: "ログインされていません。",
-        status: 401,
-      });
+      return NextResponse.json(
+        { message: "ログインされていません。" },
+        { status: 401 },
+      );
     }
-    // 取得したtokenから必要な情報を変数へ代入
-    const userId = token.id;
-    const userPermissions = token.permission_ids; // userの権限の配列
-    const targetPermission = 1; // テンプレート作成に必要な権限ID
+    const userPermissions = token.permission_ids;
+    const targetPermission = 1;
 
-    //userに権限があるかを確認
     if (!userPermissions.includes(targetPermission)) {
-      // 権限が無い場合エラーを返す
-      console.error(`status:403 ${userId}はテンプレート作成の権限がありません`);
-      return NextResponse.json({
-        message: "テンプレート作成の権限がありません",
-        status: 403,
-      });
+      return NextResponse.json(
+        { message: "テンプレート作成の権限がありません" },
+        { status: 403 },
+      );
     }
 
     // 物理削除 (delete) ではなく、deleted_at に日時を入れる (update)

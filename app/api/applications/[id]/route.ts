@@ -245,7 +245,6 @@ export async function PUT(
     // エラーがzodによるものかそれ以外かを判断
     if (error instanceof z.ZodError) {
       // zodエラーの場合どこの入力でエラーかを返す
-      console.warn("Zodバリデーション失敗:", error.issues);
       return NextResponse.json(
         {
           message: "入力データが無効です。",
